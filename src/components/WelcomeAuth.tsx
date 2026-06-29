@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { UserRole } from "../types";
 import { 
   Shield, 
   Sparkles, 
@@ -14,22 +15,34 @@ import {
   Smartphone, 
   Mail, 
   CheckCircle2,
-  ScanFace
+  ScanFace,
+  Lock,
+  Building2,
+  Key
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface WelcomeAuthProps {
-  onLoginSuccess: (name: string) => void;
+  onLoginSuccess: (name: string, role: UserRole) => void;
 }
 
 export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
   const [slide, setSlide] = useState(1);
+  const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.CITIZEN);
   const [loginMethod, setLoginMethod] = useState<"phone" | "google" | "face" | null>(null);
   const [phone, setPhone] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [faceScanning, setFaceScanning] = useState(false);
   const [faceComplete, setFaceComplete] = useState(false);
+
+  // Officer States
+  const [officerBadge, setOfficerBadge] = useState("OB-OFF-882");
+  const [officerPin, setOfficerPin] = useState("1234");
+
+  // Admin States
+  const [adminId, setAdminId] = useState("BIHAR-NODAL-77");
+  const [adminPass, setAdminPass] = useState("9988");
 
   const triggerOtpSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +53,7 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
   const handleOtpVerify = (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode) return;
-    onLoginSuccess("Arjun Mehta");
+    onLoginSuccess("Arjun Mehta", selectedRole);
   };
 
   const triggerFaceBiometric = () => {
@@ -50,9 +63,21 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
       setFaceScanning(false);
       setFaceComplete(true);
       setTimeout(() => {
-        onLoginSuccess("Arjun Mehta");
+        onLoginSuccess("Arjun Mehta", selectedRole);
       }, 1000);
     }, 3200);
+  };
+
+  const handleOfficerLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!officerBadge || !officerPin) return;
+    onLoginSuccess("Officer Ramesh Kumar", UserRole.OFFICER);
+  };
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminId || !adminPass) return;
+    onLoginSuccess("Nodal Director Sinha", UserRole.ADMIN);
   };
 
   return (
@@ -77,7 +102,7 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
           </div>
 
           {/* Slider Slides */}
-          <div className="my-8 z-10">
+          <div className="my-6 z-10 space-y-5">
             <AnimatePresence mode="wait">
               {slide === 1 ? (
                 <motion.div
@@ -85,12 +110,14 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-3"
+                  className="space-y-2.5"
                 >
-                  <span className="text-[10px] uppercase font-mono tracking-wider text-[#FF6B00] font-bold">One Nation. One Platform.</span>
-                  <h1 className="font-sans font-black text-2xl leading-tight">Every Civic Problem, Solved.</h1>
+                  <span className="text-[10px] uppercase font-mono tracking-widest text-[#FF6B00] font-black bg-[#FF6B00]/10 px-2.5 py-1 rounded-full border border-[#FF6B00]/20">
+                    Bihar Civic Network
+                  </span>
+                  <h1 className="font-sans font-black text-2xl leading-tight">Empowering Sonpur & Hajipur.</h1>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    The digital public infrastructure where citizens register, monitor, and instantly resolve road, waste, lighting, and sewage hazards directly with district authorities.
+                    The leading public infrastructure where residents instantly register, track, and resolve local road damage, solar streetlights, water-logging, and sewage issues.
                   </p>
                 </motion.div>
               ) : (
@@ -99,16 +126,54 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-3"
+                  className="space-y-2.5"
                 >
-                  <span className="text-[10px] uppercase font-mono tracking-wider text-blue-400 font-bold">AI SHIELD ENGINE</span>
-                  <h1 className="font-sans font-black text-2xl leading-tight">Smart Automated Dispatching</h1>
+                  <span className="text-[10px] uppercase font-mono tracking-widest text-emerald-400 font-black bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                    AI Automated Dispatch
+                  </span>
+                  <h1 className="font-sans font-black text-2xl leading-tight">Smart Resolution Engine</h1>
                   <p className="text-xs text-gray-400 leading-relaxed">
-                    Our machine learning networks analyze field proof photographs, auto-detect coordinates, predict priority severity, and dispatch correct repair crews automatically in under 4 minutes.
+                    Our AI models automatically verify field evidence photos, fetch precise GPS locations, assess risk urgency, and dispatch local municipal field workers in under 5 minutes.
                   </p>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* HIGH-IMPACT LIVE CIVIC STATS (FOR SONPUR-HAJIPUR) */}
+            <div className="grid grid-cols-2 gap-2 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800/80 backdrop-blur-sm shadow-inner">
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-gray-500 block">Active Sectors</span>
+                <p className="text-xs font-bold text-white leading-tight">Sonpur & Hajipur</p>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-[#FF6B00] block">Average Dispatch</span>
+                <p className="text-xs font-bold text-emerald-400 leading-tight">4.2 Minutes</p>
+              </div>
+              <div className="space-y-0.5 mt-2 pt-2 border-t border-slate-900">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-gray-500 block">Verified Residents</span>
+                <p className="text-xs font-bold text-white leading-tight">14,290+ Active</p>
+              </div>
+              <div className="space-y-0.5 mt-2 pt-2 border-t border-slate-900">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-gray-500 block">Resolution Rate</span>
+                <p className="text-xs font-bold text-white leading-tight">98.4% Checked</p>
+              </div>
+            </div>
+
+            {/* REAL-TIME LIVE DISPATCH TICKER */}
+            <div className="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/40 font-mono text-[9px] space-y-1.5 shadow-md">
+              <div className="flex items-center justify-between text-gray-500 border-b border-slate-950 pb-1">
+                <span>🟢 LIVE RESOLUTION STREAM</span>
+                <span className="animate-pulse text-[#FF6B00]">● ACTIVE</span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-gray-300 truncate">
+                  <span className="text-amber-500 font-bold">[DISPATCHED]</span> Water drain blockage cleared near Town Club, Hajipur
+                </p>
+                <p className="text-gray-400 truncate">
+                  <span className="text-emerald-500 font-bold">[RESOLVED]</span> 5 defect solar lights fixed on Harihar Nath Road, Sonpur
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Indicator & Control */}
@@ -135,8 +200,142 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
         {/* AUTHENTICATION CONTROL (RIGHT PANEL) */}
         <div className="p-8 flex flex-col justify-center bg-white relative">
           
+          {/* Role Selector Tabs (Only show when not in the middle of cellular/face login) */}
+          {loginMethod === null && (
+            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-2xl mb-6 border border-slate-200">
+              <button
+                onClick={() => setSelectedRole(UserRole.CITIZEN)}
+                className={`py-2 text-[10px] font-bold rounded-xl transition-all cursor-pointer ${selectedRole === UserRole.CITIZEN ? "bg-[#FF6B00] text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+              >
+                🇮🇳 Citizen
+              </button>
+              <button
+                onClick={() => setSelectedRole(UserRole.OFFICER)}
+                className={`py-2 text-[10px] font-bold rounded-xl transition-all cursor-pointer ${selectedRole === UserRole.OFFICER ? "bg-indigo-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+              >
+                🏢 Officer
+              </button>
+              <button
+                onClick={() => setSelectedRole(UserRole.ADMIN)}
+                className={`py-2 text-[10px] font-bold rounded-xl transition-all cursor-pointer ${selectedRole === UserRole.ADMIN ? "bg-slate-900 text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+              >
+                👑 Admin
+              </button>
+            </div>
+          )}
+
           <AnimatePresence mode="wait">
-            {loginMethod === null ? (
+            {selectedRole === UserRole.OFFICER ? (
+              <motion.div
+                key="officer-auth"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-5"
+              >
+                <div>
+                  <h3 className="font-sans font-extrabold text-gray-800 text-xl leading-tight flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-indigo-600" />
+                    Officer Command Gate
+                  </h3>
+                  <p className="text-xs text-gray-500 leading-tight">Access assignments, dispatch alerts, and coordinate directly with Sonpur & Hajipur municipal divisions.</p>
+                </div>
+
+                <form onSubmit={handleOfficerLogin} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">GP-UID Ward Badge ID</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="OB-OFF-882"
+                      value={officerBadge}
+                      onChange={(e) => setOfficerBadge(e.target.value)}
+                      className="w-full bg-slate-50 border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl text-xs p-3 outline-none text-gray-800 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">Secure Pin Passcode</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••"
+                      value={officerPin}
+                      onChange={(e) => setOfficerPin(e.target.value)}
+                      className="w-full bg-slate-50 border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl text-xs p-3 outline-none text-gray-800 tracking-widest font-mono"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Authorize Officer Portal <Shield className="w-4 h-4" />
+                  </button>
+                </form>
+
+                <div className="bg-indigo-50/60 border border-indigo-100 p-3 rounded-xl">
+                  <p className="text-[10px] text-indigo-600 leading-relaxed">
+                    <strong>💡 Developer Demo Mode:</strong> Use Badge ID <strong>OB-OFF-882</strong> and PIN <strong>1234</strong> to simulate officer dashboard access.
+                  </p>
+                </div>
+              </motion.div>
+            ) : selectedRole === UserRole.ADMIN ? (
+              <motion.div
+                key="admin-auth"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-5"
+              >
+                <div>
+                  <h3 className="font-sans font-extrabold text-gray-800 text-xl leading-tight flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-slate-900" />
+                    Nodal Admin Headquarters
+                  </h3>
+                  <p className="text-xs text-gray-500 leading-tight">Supervise GIS-tracked complaints, allocate emergency funds, and monitor municipal department SLA rates.</p>
+                </div>
+
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">District Nodal Admin ID</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="BIHAR-NODAL-77"
+                      value={adminId}
+                      onChange={(e) => setAdminId(e.target.value)}
+                      className="w-full bg-slate-50 border border-gray-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 rounded-xl text-xs p-3 outline-none text-gray-800 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700">Nodal Secure Passcode</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••"
+                      value={adminPass}
+                      onChange={(e) => setAdminPass(e.target.value)}
+                      className="w-full bg-slate-50 border border-gray-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 rounded-xl text-xs p-3 outline-none text-gray-800 tracking-widest font-mono"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Establish Secure Admin Link <Key className="w-4 h-4" />
+                  </button>
+                </form>
+
+                <div className="bg-slate-100 border border-slate-200 p-3 rounded-xl">
+                  <p className="text-[10px] text-slate-700 leading-relaxed">
+                    <strong>💡 Developer Demo Mode:</strong> Use Admin ID <strong>BIHAR-NODAL-77</strong> and Passcode <strong>9988</strong> to launch the district supervisor suite.
+                  </p>
+                </div>
+              </motion.div>
+            ) : loginMethod === null ? (
               <motion.div
                 key="choose-auth"
                 initial={{ opacity: 0 }}

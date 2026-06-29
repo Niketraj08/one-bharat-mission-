@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { gsap } from "gsap";
 import { useApp } from "../context/AppContext";
 import { Complaint, ComplaintCategory, ComplaintPriority, ComplaintStatus } from "../types";
 import { 
@@ -25,7 +26,9 @@ import {
   X,
   Star,
   Users,
-  Compass
+  Compass,
+  Twitter,
+  RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -52,6 +55,48 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
   const [feedbackCompId, setFeedbackCompId] = useState<string | null>(null);
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackComment, setFeedbackComment] = useState("");
+
+  const triggerRefresh = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+
+    // 1. Rotate the refresh button
+    gsap.to(".refresh-icon-spin", {
+      rotation: "+=360",
+      duration: 0.8,
+      ease: "power2.inOut"
+    });
+
+    // 2. Play a premium stagger fade/slide up on all complaint cards
+    gsap.fromTo(".complaint-card-animate", 
+      { opacity: 0, y: 30, scale: 0.95 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        scale: 1, 
+        duration: 0.6, 
+        stagger: 0.05, 
+        ease: "power3.out" 
+      }
+    );
+    
+    addNotification("Dashboard Refreshed", "Fetched latest reports in Sonpur and Hajipur sectors.", "success");
+  };
+
+  // Trigger stagger animation on initial mount and when changing active tabs
+  useEffect(() => {
+    gsap.fromTo(".complaint-card-animate", 
+      { opacity: 0, y: 30, scale: 0.95 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        scale: 1, 
+        duration: 0.7, 
+        stagger: 0.06, 
+        ease: "power3.out",
+        delay: 0.1
+      }
+    );
+  }, [activeTab]);
 
   // Weather indicator (Sonpur-Hajipur Local Simulation)
   const weather = { temp: "30°C", condition: "Scattered Monsoon Rains", humidity: "85%", wind: "12 km/h" };
@@ -88,7 +133,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
     setVoiceText("");
     setTimeout(() => {
       setVoiceRecording(false);
-      setVoiceText("The drainage pipe near Sahebganj Market Chowk has completely choked and dark sewer water is overflowing into the main lane. It smells horrible and is attracting insects.");
+      setVoiceText("The drainage pipe near Sonpur Bazar Chowk has completely choked and dark sewer water is overflowing into the main lane. It smells horrible and is attracting insects.");
     }, 3500);
   };
 
@@ -96,6 +141,14 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
     e.stopPropagation();
     navigator.clipboard.writeText(`https://onebharat.gov.in/track/${id}`);
     addNotification("Share link copied", "Complaint tracking link copied to clipboard.", "success");
+  };
+
+  const handlePostOnTwitter = (comp: Complaint, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = encodeURIComponent(`📢 Civic Alert in Sonpur/Hajipur, Bihar!\n📌 Title: ${comp.title}\n📍 Location: ${comp.location.address}\n🏢 Status: ${comp.status}\nReported via OneBharat 🇮🇳`);
+    const url = `https://twitter.com/intent/tweet?text=${text}`;
+    window.open(url, "_blank");
+    addNotification("Twitter Opened", "Redirecting you to Twitter with the post draft.", "success");
   };
 
   return (
@@ -220,13 +273,23 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
           </button>
         </div>
 
-        <button
-          onClick={onNewComplaint}
-          className="w-full md:w-auto px-4 py-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          File New Complaint
-        </button>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <button
+            onClick={triggerRefresh}
+            className="p-2 text-gray-400 hover:text-[#FF6B00] hover:bg-orange-50 border border-gray-200 hover:border-orange-200 rounded-xl transition-all shadow-sm bg-white flex items-center justify-center cursor-pointer"
+            title="Refresh Dashboard"
+          >
+            <RefreshCw className="refresh-icon-spin w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={onNewComplaint}
+            className="w-full md:w-auto px-4 py-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            File New Complaint
+          </button>
+        </div>
       </div>
 
       {/* RESOLUTION RATING MODAL (TRIGGERED IF COMPLAINT RESOLVED & RATING NOT SUBMITTED) */}
@@ -276,7 +339,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                 key={comp.id}
                 layoutId={`card-${comp.id}`}
                 onClick={() => onSelectComplaint(comp.id)}
-                className="bg-white hover:bg-slate-50/50 border border-gray-200 hover:border-gray-300 rounded-2xl p-4 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
+                className="complaint-card-animate bg-white hover:bg-slate-50/50 border border-gray-200 hover:border-gray-300 rounded-2xl p-4 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
               >
                 {/* Visual Glow Indicator for Emergency */}
                 {comp.priority === ComplaintPriority.EMERGENCY && (
@@ -328,6 +391,14 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                       title="Copy Share Link"
                     >
                       <Share2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      onClick={(e) => handlePostOnTwitter(comp, e)}
+                      className="p-1.5 bg-sky-50 hover:bg-sky-100 text-sky-500 border border-sky-100 rounded-xl transition-all"
+                      title="Post on Twitter / X"
+                    >
+                      <Twitter className="w-3.5 h-3.5 fill-current" />
                     </button>
                   </div>
 

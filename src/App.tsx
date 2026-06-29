@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { gsap } from "gsap";
 import { AppProvider, useApp } from "./context/AppContext";
 import { UserRole, ComplaintStatus } from "./types";
 import { WelcomeAuth } from "./components/WelcomeAuth";
@@ -58,17 +59,50 @@ function AppContent() {
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Always enforce Citizen role as requested by user to disable Admin / Officer navbar controls
+  // Synchronize active tab with selected user role
   React.useEffect(() => {
-    if (role !== UserRole.CITIZEN) {
-      setRole(UserRole.CITIZEN);
+    if (role === UserRole.CITIZEN) {
       setActiveTab("dashboard");
+    } else if (role === UserRole.OFFICER) {
+      setActiveTab("officer");
+    } else {
+      setActiveTab("admin");
     }
-  }, [role, setRole]);
+  }, [role]);
 
-  const handleLoginSuccess = (name: string) => {
+  // GSAP Entrance animation for the layout and branding logo
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(".app-logo-box", 
+          { scale: 0, rotation: -180 },
+          { scale: 1, rotation: 0, duration: 1.2, ease: "elastic.out(1, 0.65)", delay: 0.2 }
+        );
+        gsap.fromTo(".app-title-text", 
+          { opacity: 0, x: -20 },
+          { opacity: 1, x: 0, duration: 0.6, ease: "power2.out", delay: 0.4 }
+        );
+        gsap.fromTo(".app-subtitle-text", 
+          { opacity: 0, x: -20 },
+          { opacity: 1, x: 0, duration: 0.6, ease: "power2.out", delay: 0.5 }
+        );
+        gsap.fromTo(".nav-btn-item", 
+          { opacity: 0, y: -10 },
+          { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: "back.out(1.5)", delay: 0.4 }
+        );
+        gsap.fromTo(".right-control-item", 
+          { opacity: 0, x: 20 },
+          { opacity: 1, x: 0, stagger: 0.08, duration: 0.5, ease: "power2.out", delay: 0.5 }
+        );
+      });
+      return () => ctx.revert();
+    }
+  }, [isAuthenticated]);
+
+  const handleLoginSuccess = (name: string, selectedRole: UserRole) => {
     localStorage.setItem("onebharat_user_name", name);
     setUserName(name);
+    setRole(selectedRole);
     setIsAuthenticated(true);
   };
 
@@ -144,12 +178,12 @@ function AppContent() {
                 setSelectedComplaintId(null);
               }}
             >
-              <div className="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
-                <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="w-full h-full object-cover animate-pulse" />
+              <div className="app-logo-box w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
+                <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="app-logo-img w-full h-full object-cover animate-pulse" />
               </div>
               <div className="hidden sm:block text-left">
-                <h1 className="font-black text-sm uppercase tracking-tight leading-none text-white">OneBharat</h1>
-                <span className="text-[9px] font-mono tracking-widest text-[#FF6B00] uppercase block mt-0.5">India Civic Core</span>
+                <h1 className="app-title-text font-black text-sm uppercase tracking-tight leading-none text-white">OneBharat</h1>
+                <span className="app-subtitle-text text-[9px] font-mono tracking-widest text-[#FF6B00] uppercase block mt-0.5">India Civic Core</span>
               </div>
             </div>
           </div>
@@ -166,7 +200,7 @@ function AppContent() {
                     setActiveTab(item.id as any);
                     setSelectedComplaintId(null);
                   }}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  className={`nav-btn-item px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                     isSelected 
                       ? "bg-[#FF6B00] text-white shadow-md shadow-orange-500/10" 
                       : "text-gray-300 hover:text-white hover:bg-slate-800"
@@ -183,7 +217,7 @@ function AppContent() {
           <div className="flex items-center gap-3">
 
             {/* NOTIFICATION BELL WITH DROPDOWN */}
-            <div className="relative">
+            <div className="right-control-item relative">
               <button
                 onClick={handleBellClick}
                 className="p-2 bg-slate-800 hover:bg-slate-700 text-gray-300 hover:text-white rounded-xl transition-all relative border border-slate-700"
@@ -244,10 +278,12 @@ function AppContent() {
             </div>
 
             {/* USER PROFILE INFO DROPDOWN BUTTON */}
-            <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
+            <div className="right-control-item flex items-center gap-2 border-l border-slate-800 pl-3">
               <div className="text-right hidden lg:block">
                 <p className="text-xs font-bold leading-none text-white">{userName}</p>
-                <span className="text-[9px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">Verified Citizen</span>
+                <span className="text-[9px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">
+                  {role === UserRole.CITIZEN ? "Verified Citizen" : role === UserRole.OFFICER ? "Ward Officer" : "District Admin"}
+                </span>
               </div>
               <button
                 onClick={handleLogout}

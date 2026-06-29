@@ -18,7 +18,9 @@ import {
   ScanFace,
   Lock,
   Building2,
-  Key
+  Key,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -35,6 +37,7 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
   const [otpSent, setOtpSent] = useState(false);
   const [faceScanning, setFaceScanning] = useState(false);
   const [faceComplete, setFaceComplete] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   // Officer States
   const [officerBadge, setOfficerBadge] = useState("OB-OFF-882");
@@ -81,7 +84,7 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div id="welcome-onboarding-auth" className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+    <div id="welcome-onboarding-auth" className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center py-12 px-4 gap-6 max-w-6xl mx-auto">
       <div className="max-w-4xl w-full bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-2 min-h-[540px]">
         
         {/* BRANDING & SLIDES (LEFT PANEL) */}
@@ -539,6 +542,103 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
         </div>
 
       </div>
+
+      {/* ADDITIONAL LANDING PAGE CARDS - CITIZEN DIRECTORY & FIREBASE CREDENTIALS */}
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+        
+        {/* CARD 1: GOOGLE WORKSPACE DISPATCH STATUS */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-red-50 text-red-500 rounded-xl">
+                <Mail className="w-4 h-4" />
+              </div>
+              <h4 className="font-sans font-bold text-xs text-gray-800 uppercase tracking-wider">
+                Workspace Handshake
+              </h4>
+            </div>
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              Fully approved Google Gmail dispatch scopes are initialized to deliver real-time civic notifications and verification tickets to Bihar municipal desk officers.
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-100 self-start">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+            <span>Gmail API Authorized</span>
+          </div>
+        </div>
+
+        {/* CARD 2: FIREBASE SECURE SYSTEM GATEWAY (SHOW/HIDE API KEY) */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-orange-50 text-[#FF6B00] rounded-xl">
+                <Lock className="w-4 h-4" />
+              </div>
+              <h4 className="font-sans font-bold text-xs text-gray-800 uppercase tracking-wider">
+                Sandbox Credentials
+              </h4>
+            </div>
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              OneBharat operates on a secure Firebase database backend. View the verified system credentials below:
+            </p>
+          </div>
+
+          <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-gray-200 font-mono text-[9px] text-gray-600 relative">
+            <p className="text-gray-400">PROJECT ID:</p>
+            <p className="font-bold text-gray-700 truncate">striped-inquiry-419615</p>
+            
+            <div className="border-t border-gray-200/60 my-1.5 pt-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">API KEY:</span>
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="p-1 hover:bg-gray-200 text-gray-500 hover:text-[#FF6B00] rounded transition-all flex items-center gap-1 cursor-pointer"
+                  title={showApiKey ? "Hide Key" : "Show Key"}
+                >
+                  {showApiKey ? (
+                    <>
+                      <EyeOff className="w-3.5 h-3.5" />
+                      <span className="text-[8px] font-bold">Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span className="text-[8px] font-bold">Show</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="font-bold text-gray-800 tracking-tight font-mono truncate mt-0.5 select-all">
+                {showApiKey ? "AIzaSyBPOws4NoxcGK-HjHCiCQY89H-84sjOgVM" : "••••••••••••••••••••••••••••••••••••"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 3: BIHAR DISTRICT SUPER-NETWORK DIRECTORY */}
+        <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 shadow-lg space-y-3 flex flex-col justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-slate-800 text-[#FF6B00] rounded-xl">
+                <Building2 className="w-4 h-4" />
+              </div>
+              <h4 className="font-sans font-bold text-xs text-orange-400 uppercase tracking-wider">
+                Nodal Ward Dispatch
+              </h4>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Unified dispatch routers connect Sonpur Ward Central with the Hajipur Regional Corporator Cell to ensure instant local crew mobilization.
+            </p>
+          </div>
+          <div className="flex items-center justify-between text-[10px] font-mono text-gray-400 border-t border-slate-800 pt-2">
+            <span>Saran-Vaishali Hub</span>
+            <span className="text-[#FF6B00] font-bold">98.4% SLA</span>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };

@@ -1,0 +1,6 @@
+{
+  "name": "OneBharat",
+  "description": "One Nation. One Platform. Every Civic Problem, Solved. India's Next-Generation Civic Super App to report, track, and resolve civic issues.",
+  "requestFramePermissions": ["geolocation", "camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

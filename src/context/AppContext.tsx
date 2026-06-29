@@ -40,7 +40,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem("onebharat_complaints");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved) as Complaint[];
+        const missing = INITIAL_COMPLAINTS.filter(c => !parsed.some(p => p.id === c.id));
+        if (missing.length > 0) {
+          return [...parsed, ...missing];
+        }
+        return parsed;
       } catch (e) {
         console.error("Error parsing local complaints, reloading defaults", e);
       }

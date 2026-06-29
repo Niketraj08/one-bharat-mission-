@@ -401,6 +401,152 @@ export const INITIAL_COMPLAINTS: Complaint[] = [
     ],
     citizenRating: 5,
     citizenFeedback: "Heartfelt thanks to Dr. Sinha and Saran Gaushala volunteers! They came within 1.5 hours, treated the cow with wonderful gentleness, and safely relocated him. Magnificent work!"
+  },
+  {
+    id: "OB-1102-SAR",
+    category: ComplaintCategory.TRANSFORMER,
+    title: "Continuous Sparking and Smoking Electric Transformer at Sonpur Girls High School",
+    description: "The primary 250 KVA distribution transformer situated right next to the entrance of Sonpur Girls High School is sparking heavily and emitting black smoke during peak load hours. The local wire insulation is completely burnt out, presenting a high electrocution risk during rain showers. Immediate high-tension maintenance is required.",
+    priority: ComplaintPriority.EMERGENCY,
+    status: ComplaintStatus.IN_PROGRESS,
+    location: {
+      latitude: 25.6928,
+      longitude: 85.1740,
+      address: "Sonpur Girls High School Road, Ward No. 3, Sonpur, Saran, Bihar",
+      ward: "Ward No. 3 (Sonpur Central)",
+      district: "Saran",
+      state: "Bihar"
+    },
+    images: [
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=600"
+    ],
+    createdAt: "2026-06-29T05:00:00Z",
+    updatedAt: "2026-06-29T10:15:00Z",
+    userId: "user-112",
+    userName: "Ramesh Sharma",
+    userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100",
+    isAnonymous: false,
+    upvotes: 145,
+    hasUpvoted: false,
+    department: "Bihar State Power Holding Company Limited (BSPHCL)",
+    officerId: "off-202",
+    officerName: "Engineer Amit Verma",
+    officerContact: "+91 94311 00234",
+    timeline: [
+      {
+        id: "t-61",
+        status: ComplaintStatus.SUBMITTED,
+        date: "2026-06-29T05:00:00Z",
+        notes: "Emergency transformer ticket lodged. Priority automated to Critical due to location proximity to the educational school gate.",
+        updatedBy: "OneBharat AI"
+      },
+      {
+        id: "t-62",
+        status: ComplaintStatus.DISPATCHED,
+        date: "2026-06-29T06:30:00Z",
+        notes: "BSPHCL Sonpur substation alerted. Assigned to Subdivisional Power Officer Amit Verma.",
+        updatedBy: "Saran Power Dispatch"
+      },
+      {
+        id: "t-63",
+        status: ComplaintStatus.IN_PROGRESS,
+        date: "2026-06-29T10:15:00Z",
+        notes: "Emergency repair van dispatched. Linemen have temporarily disconnected the spark-prone bypass switch to avert immediate hazard while parts are fetched.",
+        updatedBy: "Engineer Amit Verma"
+      }
+    ]
+  },
+  {
+    id: "OB-8032-VSH",
+    category: ComplaintCategory.WATER_LEAKAGE,
+    title: "Major Drinking Water Pipeline Rupture on Hajipur Station Road",
+    description: "A primary 6-inch underground cast-iron drinking water pipeline has burst right beneath the main asphalt lane near the Hajipur Station round-about. Thousands of liters of pressurized treated water are gushing out hourly, flooding the nearby vegetable market stalls and causing severe water pressure drops in Ward 9 households.",
+    priority: ComplaintPriority.HIGH,
+    status: ComplaintStatus.SUBMITTED,
+    location: {
+      latitude: 25.6815,
+      longitude: 85.2110,
+      address: "Station Road, Outer Circle Bypass, Hajipur, Vaishali, Bihar",
+      ward: "Ward No. 9 (Hajipur Railway Circle)",
+      district: "Vaishali",
+      state: "Bihar"
+    },
+    images: [
+      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=600"
+    ],
+    createdAt: "2026-06-29T10:45:00Z",
+    updatedAt: "2026-06-29T10:45:00Z",
+    userId: "user-101",
+    userName: "Arjun Mehta",
+    userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100",
+    isAnonymous: false,
+    upvotes: 68,
+    hasUpvoted: false,
+    department: "Vaishali Municipal Water & Sanitation Wing",
+    timeline: [
+      {
+        id: "t-71",
+        status: ComplaintStatus.SUBMITTED,
+        date: "2026-06-29T10:45:00Z",
+        notes: "Water leakage incident registered with geographic coordinates. Routed to PHED Department.",
+        updatedBy: "OneBharat AI"
+      }
+    ]
+  },
+  {
+    id: "OB-4491-VSH",
+    category: ComplaintCategory.TREE_FALLEN,
+    title: "Centennial Banyan Tree Fallen Across Hajipur Bypass Road Corridor",
+    description: "A massive, century-old Banyan tree fell during yesterday evening's torrential monsoonal storm, entirely blocking both lanes of the Hajipur Bypass Road. The blockage has forced all highway vehicles to make long and congested detours through residential lanes, threatening minor structural damage to surrounding telephone and fiber cable lines.",
+    priority: ComplaintPriority.HIGH,
+    status: ComplaintStatus.RESOLVED,
+    location: {
+      latitude: 25.6872,
+      longitude: 85.2195,
+      address: "Bypass Main Road, Near Sector 3, Hajipur, Vaishali, Bihar",
+      ward: "Ward No. 12 (Hajipur Civil Lines)",
+      district: "Vaishali",
+      state: "Bihar"
+    },
+    images: [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=600"
+    ],
+    createdAt: "2026-06-28T19:30:00Z",
+    updatedAt: "2026-06-29T09:00:00Z",
+    userId: "user-301",
+    userName: "Gaurav Sen",
+    isAnonymous: false,
+    upvotes: 95,
+    hasUpvoted: true,
+    department: "Hajipur Forest & Municipal Cleanliness Joint Taskforce",
+    officerId: "off-204",
+    officerName: "Director Sharda Devi",
+    officerContact: "+91 94308 55432",
+    timeline: [
+      {
+        id: "t-81",
+        status: ComplaintStatus.SUBMITTED,
+        date: "2026-06-28T19:30:00Z",
+        notes: "Fallen tree complaint filed. Emergency dispatch issued.",
+        updatedBy: "OneBharat AI"
+      },
+      {
+        id: "t-82",
+        status: ComplaintStatus.DISPATCHED,
+        date: "2026-06-28T20:15:00Z",
+        notes: "Forest department tree cutters and JCB earthmovers dispatched to the site.",
+        updatedBy: "Nagar Parishad Operations"
+      },
+      {
+        id: "t-83",
+        status: ComplaintStatus.RESOLVED,
+        date: "2026-06-29T09:00:00Z",
+        notes: "Heavy limbs sawed and cleared. The trunk has been moved off the road shoulder. Telephone cables have been safety-spliced by linemen. Traffic is fully restored.",
+        updatedBy: "Director Sharda Devi"
+      }
+    ],
+    citizenRating: 4,
+    citizenFeedback: "Good response time despite the severe stormy night. The crew cut the massive branches methodically and ensured minimal traffic impact by early morning. Thank you Sharda Devi."
   }
 ];
 

@@ -546,24 +546,24 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
       {/* ADDITIONAL LANDING PAGE CARDS - CITIZEN DIRECTORY & FIREBASE CREDENTIALS */}
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
         
-        {/* CARD 1: GOOGLE WORKSPACE DISPATCH STATUS */}
+        {/* CARD 1: NATIONAL CIVIC PROTOCOL */}
         <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-red-50 text-red-500 rounded-xl">
-                <Mail className="w-4 h-4" />
+              <div className="p-2 bg-orange-50 text-[#FF6B00] rounded-xl">
+                <Shield className="w-4 h-4" />
               </div>
               <h4 className="font-sans font-bold text-xs text-gray-800 uppercase tracking-wider">
-                Workspace Handshake
+                Civic Protocol
               </h4>
             </div>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              Fully approved Google Gmail dispatch scopes are initialized to deliver real-time civic notifications and verification tickets to Bihar municipal desk officers.
+              OneBharat utilizes secure national database protocols to instantly dispatch civic notifications and verification tickets to municipal desk officers.
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-100 self-start">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <span>Gmail API Authorized</span>
+            <span>Database Secured</span>
           </div>
         </div>
 

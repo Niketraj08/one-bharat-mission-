@@ -15,7 +15,6 @@ import { OfficerPortal } from "./components/OfficerPortal";
 import { AdminPortal } from "./components/AdminPortal";
 import { InteractiveMap } from "./components/InteractiveMap";
 import { SplashIntro } from "./components/SplashIntro";
-import { GmailPortal } from "./components/GmailPortal";
 import { 
   MapPin, 
   Bell, 
@@ -130,19 +129,16 @@ function AppContent() {
       return [
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
         { id: "lodge", label: "File Complaint", icon: PlusCircle },
-        { id: "gmail", label: "Gmail Portal", icon: Mail },
         { id: "map", label: "Interactive Map", icon: Map }
       ];
     } else if (role === UserRole.OFFICER) {
       return [
         { id: "officer", label: "My Assignments", icon: UserSquare },
-        { id: "gmail", label: "Gmail Portal", icon: Mail },
         { id: "map", label: "Interactive Map", icon: Map }
       ];
     } else {
       return [
         { id: "admin", label: "Nodal Analytics", icon: LayoutDashboard },
-        { id: "gmail", label: "Gmail Portal", icon: Mail },
         { id: "map", label: "Interactive Map", icon: Map }
       ];
     }
@@ -369,8 +365,6 @@ function AppContent() {
             )}
 
             {activeTab === "map" && <InteractiveMap />}
-
-            {activeTab === "gmail" && <GmailPortal />}
 
             {activeTab === "officer" && role === UserRole.OFFICER && (
               <OfficerPortal onSelectComplaint={handleSelectComplaint} />

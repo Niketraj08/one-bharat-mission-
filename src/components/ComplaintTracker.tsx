@@ -6,7 +6,6 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Complaint, ComplaintStatus, ComplaintPriority } from "../types";
-import { googleSignIn, getAccessToken } from "../lib/firebaseAuth";
 import { 
   ArrowLeft, 
   MapPin, 
@@ -22,11 +21,7 @@ import {
   MessageSquare,
   ShieldCheck,
   Award,
-  ChevronRight,
-  Mail,
-  Send,
-  CheckCircle2,
-  RefreshCw
+  ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -42,99 +37,8 @@ export const ComplaintTracker: React.FC<ComplaintTrackerProps> = ({ complaintId,
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
-  
-  const [sendingConfirmMail, setSendingConfirmMail] = useState(false);
-  const [confirmMailSent, setConfirmMailSent] = useState(false);
 
   const comp = complaints.find((c) => c.id === complaintId);
-
-  const handleGmailConfirmation = async () => {
-    if (!comp) return;
-    setSendingConfirmMail(true);
-    try {
-      let token = await getAccessToken();
-      if (!token) {
-        const authRes = await googleSignIn();
-        if (authRes) {
-          token = authRes.accessToken;
-        }
-      }
-
-      if (!token) {
-        addNotification("Authorization Required", "Please connect your Google account to authorize secure mail sending.", "warning");
-        setSendingConfirmMail(false);
-        return;
-      }
-
-      const officerEmail = comp.location.address.includes("Sonpur") ? "sonpur.warden@gmail.com" : "hajipur.corporator@gmail.com";
-      const subjectLine = `[CIVIC STATUS CONFIRMATION] Ticket ${comp.id} - ${comp.title}`;
-      const bodyText = `Dear Ward Officer / Nodal Supervisor,
-
-I am writing to seek an official progress confirmation and status validation for the following active complaint in your ward division:
-
-📌 TICKET REFERENCE: ${comp.id}
-📍 LOCATION: ${comp.location.address}
-🏢 ASSIGNED DEPT: ${comp.department}
-🚨 CURRENT STATUS: ${comp.status} (Priority: ${comp.priority})
-
-Details of the Complaint:
-"${comp.description}"
-
-Please review the progress of this ticket, confirm whether dispatch crews are actively deployed, and verify the expected resolution completion timeframe.
-
-Best regards,
-OneBharat Citizen Verification`;
-
-      const emailLines = [
-        `To: ${officerEmail}`,
-        "Content-Type: text/html; charset=utf-8",
-        "MIME-Version: 1.0",
-        `Subject: ${subjectLine}`,
-        "",
-        `<div style="font-family: sans-serif; color: #334155; line-height: 1.6; max-width: 600px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-          <h2 style="color: #FF6B00; margin-top: 0; font-size: 20px;">🇮🇳 OneBharat Civic Status Handshake</h2>
-          <p style="font-size: 13px; font-weight: bold; color: #475569;">Official status verification query regarding registered grievance.</p>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;" />
-          <div style="background-color: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #FF6B00;">
-            ${bodyText.replace(/\n/g, "<br />")}
-          </div>
-          <p style="font-size: 11px; color: #64748b; margin-top: 35px; border-t: 1px solid #f1f5f9; padding-top: 15px;">
-            This email was sent securely using your authorized Google Workspace OAuth configuration.
-          </p>
-        </div>`
-      ];
-
-      const emailStr = emailLines.join("\r\n");
-      const base64Safe = btoa(unescape(encodeURIComponent(emailStr)))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
-
-      const sendRes = await fetch(
-        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ raw: base64Safe }),
-        }
-      );
-
-      if (!sendRes.ok) {
-        throw new Error("API request failed");
-      }
-
-      setConfirmMailSent(true);
-      addNotification("Email Handshake Sent", `Status query successfully delivered to ${officerEmail}.`, "success");
-    } catch (err) {
-      console.error("Gmail confirm error:", err);
-      addNotification("Failed to transmit", "Handshake failed. Ensure permissions are granted.", "warning");
-    } finally {
-      setSendingConfirmMail(false);
-    }
-  };
 
   if (!comp) {
     return (
@@ -316,50 +220,6 @@ OneBharat Citizen Verification`;
               </p>
             </div>
           )}
-
-          {/* GMAIL HANDSHAKE & CONFIRMATION BOX */}
-          <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 shadow-lg space-y-3.5 relative overflow-hidden">
-            <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none"></div>
-            
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-              <div className="p-1.5 bg-red-500/10 text-red-400 rounded-lg">
-                <Mail className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="font-sans font-bold text-sm">Gmail Handshake</h4>
-                <p className="text-[9px] font-mono text-[#FF6B00] uppercase font-bold tracking-wider">Verify & Confirm Ticket</p>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-gray-300 leading-relaxed">
-              Triggers a secure Google Workspace mail dispatch. Sends an official verification query to the dispatcher desk to request an urgent on-site field assessment.
-            </p>
-
-            {confirmMailSent ? (
-              <div className="p-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl flex items-center gap-2 text-xs font-bold font-sans">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Handshake delivered to desk!</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleGmailConfirmation}
-                disabled={sendingConfirmMail}
-                className="w-full py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-800/50 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-red-600/15 cursor-pointer disabled:opacity-50"
-              >
-                {sendingConfirmMail ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Encrypting & Dispatching...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Confirm via Gmail</span>
-                    <Send className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
-            )}
-          </div>
 
           {/* CITIZEN CLOSE & SURVEY PORTAL */}
           {isResolved && !comp.citizenRating && (

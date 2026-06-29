@@ -44,7 +44,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
     addNotification 
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<"all" | "my" | "upvoted" | "emergency">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "my" | "upvoted" | "emergency">("my");
   const [sosModalOpen, setSosModalOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [voiceRecording, setVoiceRecording] = useState(false);

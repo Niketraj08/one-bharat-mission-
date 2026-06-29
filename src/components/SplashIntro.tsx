@@ -195,12 +195,11 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({ onComplete }) => {
           <div className="splash-circle splash-circle-outer absolute inset-3 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,107,0,0.4)]">
             
             {/* Inner Ring Layer: Rotating Ashok Chakra Dots */}
-            <div className="splash-circle splash-circle-inner absolute inset-1 border-2 border-white/20 border-dashed rounded-full flex items-center justify-center bg-slate-950/40">
+            <div className="splash-circle splash-circle-inner absolute inset-1 border-2 border-white/20 border-dashed rounded-full flex items-center justify-center bg-slate-950/40 overflow-hidden">
               
-              {/* MapPin Core Element */}
-              <div className="splash-pin absolute transform flex items-center justify-center text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
-                <MapPin className="w-12 h-12 text-white fill-current animate-pulse" />
-                <div className="absolute w-3 h-3 bg-slate-900 rounded-full top-2.5" />
+              {/* Custom Image Logo */}
+              <div className="splash-pin absolute transform flex items-center justify-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] w-16 h-16 rounded-2xl overflow-hidden border border-white/10">
+                <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="w-full h-full object-cover animate-pulse" />
               </div>
 
             </div>

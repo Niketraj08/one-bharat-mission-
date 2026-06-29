@@ -67,8 +67,8 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
 
           {/* Logo Heading */}
           <div className="flex items-center gap-2 z-10">
-            <div className="w-9 h-9 bg-gradient-to-tr from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <MapPin className="w-5 h-5 text-white fill-current" />
+            <div className="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
+              <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="w-full h-full object-cover animate-pulse" />
             </div>
             <div>
               <h2 className="font-sans font-extrabold text-base leading-none tracking-tight">OneBharat</h2>

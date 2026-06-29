@@ -58,6 +58,14 @@ function AppContent() {
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Always enforce Citizen role as requested by user to disable Admin / Officer navbar controls
+  React.useEffect(() => {
+    if (role !== UserRole.CITIZEN) {
+      setRole(UserRole.CITIZEN);
+      setActiveTab("dashboard");
+    }
+  }, [role, setRole]);
+
   const handleLoginSuccess = (name: string) => {
     localStorage.setItem("onebharat_user_name", name);
     setUserName(name);
@@ -132,12 +140,12 @@ function AppContent() {
             <div 
               className="flex items-center gap-2.5 cursor-pointer"
               onClick={() => {
-                setActiveTab(role === UserRole.CITIZEN ? "dashboard" : role === UserRole.OFFICER ? "officer" : "admin");
+                setActiveTab("dashboard");
                 setSelectedComplaintId(null);
               }}
             >
-              <div className="w-8.5 h-8.5 bg-[#FF6B00] rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-                <MapPin className="w-5 h-5 text-white fill-current" />
+              <div className="w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
+                <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="w-full h-full object-cover animate-pulse" />
               </div>
               <div className="hidden sm:block text-left">
                 <h1 className="font-black text-sm uppercase tracking-tight leading-none text-white">OneBharat</h1>
@@ -171,33 +179,8 @@ function AppContent() {
             })}
           </nav>
 
-          {/* RIGHT CONTROLS: ROLE SELECTOR, NOTIFICATIONS, PROFILE */}
+          {/* RIGHT CONTROLS: NOTIFICATIONS, PROFILE */}
           <div className="flex items-center gap-3">
-            
-            {/* ROLE TOGGLE / SWITCHER PANEL */}
-            <div className="bg-slate-850 p-1 border border-slate-800 rounded-xl hidden sm:flex items-center gap-1">
-              <span className="text-[10px] font-mono text-gray-400 px-1.5 uppercase font-bold">Role:</span>
-              {Object.values(UserRole).map((r) => {
-                const isSelected = role === r;
-                return (
-                  <button
-                    key={r}
-                    onClick={() => {
-                      setRole(r);
-                      setActiveTab(r === UserRole.CITIZEN ? "dashboard" : r === UserRole.OFFICER ? "officer" : "admin");
-                      setSelectedComplaintId(null);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                      isSelected 
-                        ? "bg-[#FF6B00] text-white" 
-                        : "text-gray-400 hover:text-white hover:bg-slate-800"
-                    }`}
-                  >
-                    {r}
-                  </button>
-                );
-              })}
-            </div>
 
             {/* NOTIFICATION BELL WITH DROPDOWN */}
             <div className="relative">
@@ -264,7 +247,7 @@ function AppContent() {
             <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
               <div className="text-right hidden lg:block">
                 <p className="text-xs font-bold leading-none text-white">{userName}</p>
-                <span className="text-[9px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">{role} Level</span>
+                <span className="text-[9px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">Verified Citizen</span>
               </div>
               <button
                 onClick={handleLogout}
@@ -315,33 +298,7 @@ function AppContent() {
               })}
             </div>
 
-            {/* Mobile Role Switcher */}
-            <div className="pt-4 border-t border-slate-800">
-              <span className="text-[10px] font-mono text-gray-400 block mb-2 uppercase tracking-wider font-bold">Select Active Gate:</span>
-              <div className="grid grid-cols-3 gap-1.5">
-                {Object.values(UserRole).map((r) => {
-                  const isSelected = role === r;
-                  return (
-                    <button
-                      key={r}
-                      onClick={() => {
-                        setRole(r);
-                        setActiveTab(r === UserRole.CITIZEN ? "dashboard" : r === UserRole.OFFICER ? "officer" : "admin");
-                        setSelectedComplaintId(null);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`py-1.5 rounded-xl text-[10px] font-bold transition-all uppercase ${
-                        isSelected 
-                          ? "bg-[#FF6B00] text-white" 
-                          : "bg-slate-800 text-gray-400"
-                      }`}
-                    >
-                      {r}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+
           </motion.div>
         )}
       </AnimatePresence>

@@ -48,6 +48,62 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
+interface ToastItemProps {
+  notif: {
+    id: string;
+    title: string;
+    message: string;
+    type: "info" | "success" | "warning" | "alert";
+  };
+  onDismiss: (id: string) => void;
+}
+
+const ToastItem: React.FC<ToastItemProps> = ({ notif, onDismiss }) => {
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onDismiss(notif.id);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [notif.id, onDismiss]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 50, scale: 0.95 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 50, scale: 0.95 }}
+      className="p-3.5 bg-gray-900 text-white rounded-2xl shadow-xl flex items-start gap-3 pointer-events-auto border border-gray-800 relative group"
+    >
+      {notif.type === "alert" || notif.type === "warning" ? (
+        <div className="p-1.5 bg-red-500/20 text-red-400 rounded-lg flex-shrink-0 animate-pulse">
+          <AlertTriangle className="w-4 h-4" />
+        </div>
+      ) : (
+        <div className="p-1.5 bg-green-500/20 text-green-400 rounded-lg flex-shrink-0">
+          <CheckCircle className="w-4 h-4" />
+        </div>
+      )}
+      
+      <div className="flex-1 pr-6">
+        <h5 className="text-xs font-bold font-sans">{notif.title}</h5>
+        <p className="text-[10px] text-gray-400 leading-normal mt-0.5">{notif.message}</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDismiss(notif.id);
+        }}
+        className="absolute top-2 right-2 p-1 text-gray-500 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+        aria-label="Dismiss alert"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </motion.div>
+  );
+};
+
+
 function AppContent() {
   const { 
     role, 
@@ -455,41 +511,11 @@ function AppContent() {
             .filter((notif) => !notif.read)
             .slice(0, 2)
             .map((notif) => (
-              <motion.div
+              <ToastItem
                 key={notif.id}
-                initial={{ opacity: 0, x: 50, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 50, scale: 0.95 }}
-                className="p-3.5 bg-gray-900 text-white rounded-2xl shadow-xl flex items-start gap-3 pointer-events-auto border border-gray-800 relative group"
-              >
-                {notif.type === "alert" ? (
-                  <div className="p-1.5 bg-red-500/20 text-red-400 rounded-lg flex-shrink-0 animate-pulse">
-                    <AlertTriangle className="w-4 h-4" />
-                  </div>
-                ) : (
-                  <div className="p-1.5 bg-green-500/20 text-green-400 rounded-lg flex-shrink-0">
-                    <CheckCircle className="w-4 h-4" />
-                  </div>
-                )}
-                
-                <div className="flex-1 pr-6">
-                  <h5 className="text-xs font-bold font-sans">{notif.title}</h5>
-                  <p className="text-[10px] text-gray-400 leading-normal mt-0.5">{notif.message}</p>
-                </div>
-
-                {/* Dismiss Button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    markNotificationAsRead(notif.id);
-                  }}
-                  className="absolute top-2 right-2 p-1 text-gray-500 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
-                  aria-label="Dismiss alert"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </motion.div>
+                notif={notif}
+                onDismiss={markNotificationAsRead}
+              />
             ))}
         </AnimatePresence>
       </div>

@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
-import { ComplaintStatus, ComplaintPriority } from "../types";
+import { ComplaintStatus, ComplaintPriority, ComplaintCategory, Complaint } from "../types";
 import { 
   BarChart, 
   FileText, 
@@ -22,7 +22,13 @@ import {
   ShieldAlert,
   Search,
   Filter,
-  Sparkles
+  Sparkles,
+  X,
+  Edit2,
+  FolderOpen,
+  Briefcase,
+  AlertOctagon,
+  MessageSquare
 } from "lucide-react";
 import { GENERAL_STATS } from "../data";
 import { jsPDF } from "jspdf";
@@ -32,11 +38,21 @@ interface AdminPortalProps {
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) => {
-  const { complaints, addNotification } = useApp();
+  const { complaints, setComplaints, addNotification } = useApp();
 
   const [activeDistrict, setActiveDistrict] = useState("Saran");
   const [activeWard, setActiveWard] = useState("All Wards");
   const [adminSearch, setAdminSearch] = useState("");
+
+  // Administrative Edit & Routing Modal State
+  const [selectedTicket, setSelectedTicket] = useState<Complaint | null>(null);
+  const [ticketCategory, setTicketCategory] = useState<string>("");
+  const [ticketTitle, setTicketTitle] = useState("");
+  const [ticketDescription, setTicketDescription] = useState("");
+  const [ticketDept, setTicketDept] = useState("");
+  const [ticketStatus, setTicketStatus] = useState<ComplaintStatus>(ComplaintStatus.SUBMITTED);
+  const [ticketPriority, setTicketPriority] = useState<ComplaintPriority>(ComplaintPriority.LOW);
+  const [adminProgressNote, setAdminProgressNote] = useState("");
 
   const auditLogs = [
     { time: "10:12:30", type: "AI_ROUTE", text: "Ticket OB-9031 assigned to Sonpur / Hajipur Municipal division under Director Sharda Devi" },
@@ -45,6 +61,78 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
     { time: "07:30:12", type: "DUPLICATE_CHECK", text: "AI duplicate detector evaluated 3 sewage reports on Sonpur Road. Confirmed unique." },
     { time: "Yesterday", type: "SECURITY", text: "State admin audit: Role permissions reviewed for 18 district coordinators" }
   ];
+
+  const standardDepartments = [
+    "Roads & Highways Division, Saran",
+    "Saran Electricity & Streetlights Board",
+    "Sonpur-Hajipur Swachhata & Waste Division",
+    "Saran District Water & Sanitation Commission",
+    "Saran Swachh Bharat Cleanliness Wing",
+    "Saran District Disaster Management Authority (DDMA)",
+    "Saran Government Veterinary Wing & Gau-Sewa NGO",
+    "Bihar State Power Holding Company Limited (BSPHCL)",
+    "Vaishali Municipal Water & Sanitation Wing",
+    "Hajipur Forest & Municipal Cleanliness Joint Taskforce"
+  ];
+
+  const openManageModal = (c: Complaint) => {
+    setSelectedTicket(c);
+    setTicketCategory(c.category);
+    setTicketTitle(c.title);
+    setTicketDescription(c.description);
+    setTicketDept(c.department || "");
+    setTicketStatus(c.status);
+    setTicketPriority(c.priority);
+    setAdminProgressNote("");
+  };
+
+  const handleSaveAdminUpdates = () => {
+    if (!selectedTicket) return;
+
+    setComplaints((prev) =>
+      prev.map((c) => {
+        if (c.id === selectedTicket.id) {
+          const timeStr = new Date().toISOString();
+          
+          // Build custom progress update note
+          const progressNote = adminProgressNote.trim()
+            ? adminProgressNote.trim()
+            : `Admin updated ticket parameters: Assigned category to '${ticketCategory}', routed to department '${ticketDept}', status updated to '${ticketStatus}' with priority level '${ticketPriority}'.`;
+
+          const newTimelineEvent = {
+            id: "t-admin-" + Date.now(),
+            status: ticketStatus,
+            date: timeStr,
+            notes: progressNote,
+            updatedBy: "NIC Nodal Admin Desk"
+          };
+
+          return {
+            ...c,
+            category: ticketCategory,
+            title: ticketTitle,
+            description: ticketDescription,
+            department: ticketDept,
+            status: ticketStatus,
+            priority: ticketPriority,
+            updatedAt: timeStr,
+            timeline: [...c.timeline, newTimelineEvent]
+          };
+        }
+        return c;
+      })
+    );
+
+    addNotification(
+      "Ticket Routing Updated",
+      `Grievance ${selectedTicket.id} updated and dispatched successfully.`,
+      "success"
+    );
+
+    // Reset modal state
+    setSelectedTicket(null);
+    setAdminProgressNote("");
+  };
 
   const exportReport = (format: string) => {
     if (format === "csv") {
@@ -563,7 +651,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
           <div>
             <h3 className="font-sans font-bold text-gray-800 text-base">State Grievance Registry</h3>
-            <p className="text-[11px] text-gray-400">Search and filter live records, inspect details, and trigger target ticket PDFs</p>
+            <p className="text-[11px] text-gray-400">Search and filter live records, inspect details, re-route to correct division, and edit/approve status</p>
           </div>
           
           <div className="relative w-full md:w-72">
@@ -586,16 +674,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
           <>
             {/* Desktop / Tablet Table View (hidden on mobile, shown on sm and up) */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs text-gray-700 min-w-[700px]">
+              <table className="w-full text-left border-collapse text-xs text-gray-700 min-w-[750px]">
                 <thead>
                   <tr className="border-b border-gray-150 text-gray-400 font-mono text-[10px] uppercase">
                     <th className="pb-3 pl-2">ID</th>
                     <th className="pb-3">Grievance & Title</th>
+                    <th className="pb-3">Nodal Department</th>
                     <th className="pb-3">Ward</th>
                     <th className="pb-3 text-center">Priority</th>
                     <th className="pb-3 text-center">Status</th>
                     <th className="pb-3 text-center">Upvotes</th>
-                    <th className="pb-3 text-right pr-2">Action</th>
+                    <th className="pb-3 text-right pr-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -605,6 +694,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                         ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                         : c.status === ComplaintStatus.IN_PROGRESS
                         ? "bg-blue-50 text-blue-700 border-blue-100"
+                        : c.status === ComplaintStatus.DISPATCHED
+                        ? "bg-indigo-50 text-indigo-700 border-indigo-100"
                         : "bg-orange-50 text-orange-700 border-orange-100";
 
                     const priorityColors =
@@ -617,7 +708,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                         <td className="py-3 pl-2 font-mono font-bold text-[#FF6B00]">{c.id}</td>
                         <td className="py-3">
                           <div className="font-semibold text-gray-900">{c.category}</div>
-                          <div className="text-gray-400 text-[10px] truncate max-w-xs">{c.title}</div>
+                          <div className="text-gray-400 text-[10px] truncate max-w-[180px]">{c.title}</div>
+                        </td>
+                        <td className="py-3">
+                          <div className="text-xs text-gray-700 truncate max-w-[150px]" title={c.department}>{c.department}</div>
                         </td>
                         <td className="py-3 font-mono text-[10px] text-gray-500">{c.location?.ward || "Ward No. 4"}</td>
                         <td className="py-3 text-center">
@@ -632,12 +726,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                         </td>
                         <td className="py-3 text-center font-bold text-gray-800">{c.upvotes}</td>
                         <td className="py-3 text-right pr-2">
-                          <button
-                            onClick={() => onSelectComplaint(c.id)}
-                            className="px-2.5 py-1 bg-[#FF6B00]/10 hover:bg-[#FF6B00] text-[#FF6B00] hover:text-white rounded-lg text-[10px] font-bold tracking-wide transition-all cursor-pointer inline-flex items-center gap-1 border border-[#FF6B00]/20"
-                          >
-                            Inspect & PDF <ChevronRight className="w-3 h-3" />
-                          </button>
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => openManageModal(c)}
+                              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-gray-800 rounded-lg text-[10px] font-bold tracking-wide transition-all cursor-pointer inline-flex items-center gap-1 border border-gray-300"
+                            >
+                              <Settings className="w-3 h-3 text-[#FF6B00]" /> Edit & Approve
+                            </button>
+                            <button
+                              onClick={() => onSelectComplaint(c.id)}
+                              className="px-2.5 py-1 bg-[#FF6B00]/10 hover:bg-[#FF6B00] text-[#FF6B00] hover:text-white rounded-lg text-[10px] font-bold tracking-wide transition-all cursor-pointer inline-flex items-center gap-1 border border-[#FF6B00]/20"
+                            >
+                              Track & PDF <ChevronRight className="w-3 h-3" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -654,6 +756,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                     : c.status === ComplaintStatus.IN_PROGRESS
                     ? "bg-blue-50 text-blue-700 border-blue-100"
+                    : c.status === ComplaintStatus.DISPATCHED
+                    ? "bg-indigo-50 text-indigo-700 border-indigo-100"
                     : "bg-orange-50 text-orange-700 border-orange-100";
 
                 const priorityColors =
@@ -668,9 +772,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                       <span className="text-[10px] text-gray-500 font-mono">{c.location?.ward || "Ward No. 4"}</span>
                     </div>
 
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <div className="font-bold text-gray-800 text-xs">{c.category}</div>
-                      <p className="text-[11px] text-gray-500 line-clamp-2">{c.title}</p>
+                      <div className="text-[10px] font-mono text-[#FF6B00] leading-none">{c.department}</div>
+                      <p className="text-[11px] text-gray-500 line-clamp-2 mt-1">{c.title}</p>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 items-center justify-between pt-1 border-t border-slate-200/50">
@@ -685,12 +790,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                       <span className="text-[10px] text-gray-500">Upvotes: <b className="text-gray-800">{c.upvotes}</b></span>
                     </div>
 
-                    <button
-                      onClick={() => onSelectComplaint(c.id)}
-                      className="w-full py-1.5 bg-[#FF6B00] hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
-                    >
-                      Inspect & Download Ticket PDF <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/50">
+                      <button
+                        onClick={() => openManageModal(c)}
+                        className="py-1.5 bg-slate-100 hover:bg-slate-200 text-gray-800 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 border border-gray-300"
+                      >
+                        <Settings className="w-3.5 h-3.5 text-[#FF6B00]" /> Edit & Approve
+                      </button>
+                      <button
+                        onClick={() => onSelectComplaint(c.id)}
+                        className="py-1.5 bg-[#FF6B00] hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        Track & PDF <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -698,6 +811,185 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
           </>
         )}
       </div>
+
+      {/* ADMINISTRATIVE ACTIONS MODAL */}
+      {selectedTicket && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in duration-200">
+            
+            {/* Header */}
+            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-[#FF6B00]" />
+                <div>
+                  <h3 className="font-sans font-bold text-base">NIC Nodal Administrative Control Panel</h3>
+                  <p className="text-[10px] text-slate-400 font-mono">MANAGE / EDIT / RE-ROUTE TICKET: {selectedTicket.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedTicket(null)}
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form Content */}
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              
+              {/* Grievance Core Edit */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3.5">
+                <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs uppercase font-mono tracking-wider">
+                  <Edit2 className="w-4 h-4 text-slate-500" /> Core Grievance Parameters (Edit)
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Grievance Category</label>
+                    <select
+                      value={ticketCategory}
+                      onChange={(e) => {
+                        setTicketCategory(e.target.value);
+                        // Auto-assign corresponding department to make it incredibly smooth!
+                        const cat = e.target.value;
+                        if (cat === ComplaintCategory.ROAD_DAMAGE || cat === ComplaintCategory.BROKEN_FOOTPATH) {
+                          setTicketDept("Roads & Highways Division, Saran");
+                        } else if (cat === ComplaintCategory.STREET_LIGHT || cat === ComplaintCategory.ELECTRICITY || cat === ComplaintCategory.TRANSFORMER) {
+                          setTicketDept("Saran Electricity & Streetlights Board");
+                        } else if (cat === ComplaintCategory.GARBAGE || cat === ComplaintCategory.ILLEGAL_DUMPING || cat === ComplaintCategory.CONSTRUCTION_WASTE) {
+                          setTicketDept("Sonpur-Hajipur Swachhata & Waste Division");
+                        } else if (cat === ComplaintCategory.WATER_LEAKAGE || cat === ComplaintCategory.DRAINAGE || cat === ComplaintCategory.SEWAGE_OVERFLOW) {
+                          setTicketDept("Saran District Water & Sanitation Commission");
+                        } else if (cat === ComplaintCategory.FLOOD || cat === ComplaintCategory.TREE_FALLEN) {
+                          setTicketDept("Saran District Disaster Management Authority (DDMA)");
+                        } else if (cat === ComplaintCategory.ANIMAL_RESCUE) {
+                          setTicketDept("Saran Government Veterinary Wing & Gau-Sewa NGO");
+                        }
+                      }}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#FF6B00]"
+                    >
+                      {Object.values(ComplaintCategory).map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Title</label>
+                    <input
+                      type="text"
+                      value={ticketTitle}
+                      onChange={(e) => setTicketTitle(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#FF6B00]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Description</label>
+                  <textarea
+                    rows={2}
+                    value={ticketDescription}
+                    onChange={(e) => setTicketDescription(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#FF6B00]"
+                  />
+                </div>
+              </div>
+
+              {/* Administrative Routing and Status Updates */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                {/* Department Re-route Option */}
+                <div className="space-y-1 col-span-1 md:col-span-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                    <Briefcase className="w-3.5 h-3.5 text-[#FF6B00]" /> Assigned Municipal Division
+                  </label>
+                  <select
+                    value={ticketDept}
+                    onChange={(e) => setTicketDept(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#FF6B00]"
+                  >
+                    {standardDepartments.map((dept) => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                    <option value="Saran Ward Municipal Administration">General Ward Municipal Administration</option>
+                  </select>
+                </div>
+
+                {/* Priority Selection */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                    <AlertOctagon className="w-3.5 h-3.5 text-red-500" /> Dispatch Priority
+                  </label>
+                  <select
+                    value={ticketPriority}
+                    onChange={(e) => setTicketPriority(e.target.value as ComplaintPriority)}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#FF6B00]"
+                  >
+                    {Object.values(ComplaintPriority).map((pri) => (
+                      <option key={pri} value={pri}>{pri} Priority</option>
+                    ))}
+                  </select>
+                </div>
+
+              </div>
+
+              {/* Approval & Status Selection */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                  <CheckCircle className="w-3.5 h-3.5 text-green-600" /> Case Status & Nodal Approval
+                </label>
+                <select
+                  value={ticketStatus}
+                  onChange={(e) => setTicketStatus(e.target.value as ComplaintStatus)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 font-bold text-gray-900 rounded-xl text-xs outline-none focus:border-[#FF6B00]"
+                >
+                  <option value={ComplaintStatus.SUBMITTED}>Submitted (Review Queue)</option>
+                  <option value={ComplaintStatus.DISPATCHED}>Approved & Dispatched (Assigned to Field Nodal)</option>
+                  <option value={ComplaintStatus.IN_PROGRESS}>In Progress (Ground Team Deploy / Repair Ongoing)</option>
+                  <option value={ComplaintStatus.RESOLVED}>Resolved (Field verification uploaded, pending close)</option>
+                  <option value={ComplaintStatus.CLOSED}>Closed (Archived case)</option>
+                </select>
+              </div>
+
+              {/* CUSTOM CITIZEN STATUS COMMUNICATOR Note */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                  <MessageSquare className="w-3.5 h-3.5 text-[#FF6B00]" /> Progress Update Comments (Shown to Citizen Tracking Page)
+                </label>
+                <textarea
+                  rows={3}
+                  value={adminProgressNote}
+                  onChange={(e) => setAdminProgressNote(e.target.value)}
+                  placeholder="Tell the citizen exactly how much and where the problem is solved... e.g. 'Your road damage complaint OB-XXXX has been evaluated by our lead civil engineer. Concrete mixers and rollers have arrived at the site. The restoration of Sonpur high road has commenced.' "
+                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#FF6B00] placeholder:text-gray-400"
+                />
+                <span className="text-[10px] text-gray-400 italic block font-mono">
+                  💡 Leaving this field empty will auto-generate an official administration action log.
+                </span>
+              </div>
+
+            </div>
+
+            {/* Actions Footer */}
+            <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex items-center justify-end gap-2.5">
+              <button
+                onClick={() => setSelectedTicket(null)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-gray-700 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAdminUpdates}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-md"
+              >
+                <CheckCircle className="w-4 h-4 text-[#FF6B00]" /> Save Administrative Updates
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

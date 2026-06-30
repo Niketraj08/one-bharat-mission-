@@ -14,6 +14,7 @@ import { OfficerPortal } from "./components/OfficerPortal";
 import { AdminPortal } from "./components/AdminPortal";
 import { InteractiveMap } from "./components/InteractiveMap";
 import { SplashIntro } from "./components/SplashIntro";
+import { WelcomeAuth } from "./components/WelcomeAuth";
 import { 
   MapPin, 
   Bell, 
@@ -51,15 +52,12 @@ function AppContent() {
     setSelectedComplaintId 
   } = useApp();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!localStorage.getItem("onebharat_user_name");
+  });
   
   const [userName, setUserName] = useState(() => {
-    const saved = localStorage.getItem("onebharat_user_name");
-    if (!saved) {
-      localStorage.setItem("onebharat_user_name", "Niket Raj");
-      return "Niket Raj";
-    }
-    return saved;
+    return localStorage.getItem("onebharat_user_name") || "";
   });
 
   const [showApiKey, setShowApiKey] = useState(false);
@@ -158,6 +156,10 @@ function AppContent() {
     setSelectedComplaintId(id);
     setActiveTab("track");
   };
+
+  if (!isAuthenticated) {
+    return <WelcomeAuth onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

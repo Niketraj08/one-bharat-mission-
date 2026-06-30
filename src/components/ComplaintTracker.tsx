@@ -21,9 +21,11 @@ import {
   MessageSquare,
   ShieldCheck,
   Award,
-  ChevronRight
+  ChevronRight,
+  Download
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { jsPDF } from "jspdf";
 
 interface ComplaintTrackerProps {
   complaintId: string;
@@ -69,6 +71,268 @@ export const ComplaintTracker: React.FC<ComplaintTrackerProps> = ({ complaintId,
     addNotification("Rating Recorded", "Thank you for validating field work quality.", "success");
   };
 
+  const handleDownloadReport = () => {
+    try {
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+      });
+
+      let y = 15;
+
+      // Draw top orange accent bar
+      doc.setFillColor(255, 107, 0); // #FF6B00
+      doc.rect(15, y, 180, 4, "F");
+      y += 12;
+
+      // Header Text
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(15, 23, 42); // slate-900
+      doc.text("ONEBHARAT", 15, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139); // slate-500
+      doc.text("CIVIC DISPATCH & REDRESSAL PLATFORM", 15, y + 5);
+
+      // Right side of Header: Official Report
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(255, 107, 0);
+      doc.text("OFFICIAL STATUS REPORT", 195, y, { align: "right" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 195, y + 5, { align: "right" });
+
+      y += 15;
+
+      // Divider line
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.line(15, y, 195, y);
+      y += 10;
+
+      // 1. TICKET METADATA CARD (using simple rectangle)
+      doc.setFillColor(248, 250, 252); // slate-50
+      doc.setDrawColor(226, 232, 240);
+      doc.rect(15, y, 180, 28, "FD");
+
+      // Text inside Ticket metadata card
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`TICKET ID: ${comp.id}`, 20, y + 8);
+
+      // Priority Badge
+      const isEmergency = comp.priority === ComplaintPriority.EMERGENCY;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      if (isEmergency) {
+        doc.setTextColor(220, 38, 38); // red-600
+        doc.text(`PRIORITY: ${comp.priority.toUpperCase()}`, 190, y + 8, { align: "right" });
+      } else {
+        doc.setTextColor(37, 99, 235); // blue-600
+        doc.text(`PRIORITY: ${comp.priority.toUpperCase()}`, 190, y + 8, { align: "right" });
+      }
+
+      // Status & Category
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105); // slate-600
+      doc.text(`Category: ${comp.category}`, 20, y + 16);
+      doc.text(`Created Date: ${new Date(comp.createdAt).toLocaleDateString()} ${new Date(comp.createdAt).toLocaleTimeString()}`, 20, y + 22);
+
+      // Status Badge on Right
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      const isSucceeded = comp.status === ComplaintStatus.RESOLVED || comp.status === ComplaintStatus.CLOSED;
+      if (isSucceeded) {
+        doc.setTextColor(16, 185, 129); // emerald-500
+      } else {
+        doc.setTextColor(245, 158, 11); // amber-500
+      }
+      doc.text(`STATUS: ${comp.status.toUpperCase()}`, 190, y + 18, { align: "right" });
+
+      y += 38;
+
+      // 2. COMPLAINT DESCRIPTION
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Grievance Description", 15, y);
+      y += 5;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(51, 65, 85);
+      doc.text(comp.title, 15, y);
+      y += 5;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      const splitDesc = doc.splitTextToSize(comp.description, 180);
+      doc.text(splitDesc, 15, y);
+      y += splitDesc.length * 4.5 + 8;
+
+      // 3. LOCATION & ASSIGNMENT DETAILS (Two columns)
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Location & Administrative Assignment", 15, y);
+      y += 6;
+
+      // Left Column: Location
+      doc.setFillColor(250, 250, 250);
+      doc.setDrawColor(240, 240, 240);
+      doc.rect(15, y, 86, 36, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text("LOCATION DETAILS", 20, y + 6);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(71, 85, 105);
+      const splitAddress = doc.splitTextToSize(comp.location.address, 76);
+      doc.text(splitAddress, 20, y + 12);
+
+      const addressLinesHeight = splitAddress.length * 4;
+      doc.text(`Landmark: ${comp.location.landmark || "N/A"}`, 20, y + 14 + addressLinesHeight);
+      doc.text(`Ward: ${comp.location.ward}`, 20, y + 19 + addressLinesHeight);
+      doc.text(`Region: ${comp.location.state}`, 20, y + 24 + addressLinesHeight);
+
+      // Right Column: Assignment
+      doc.rect(109, y, 86, 36, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text("ADMINISTRATIVE DISPATCH", 114, y + 6);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(71, 85, 105);
+      
+      const splitDept = doc.splitTextToSize(comp.department || "Saran Ward Municipal Administration", 76);
+      doc.text(splitDept, 114, y + 12);
+      const deptHeight = splitDept.length * 4;
+
+      doc.text(`Officer: ${comp.officerName || "Auto-routing Algorithm"}`, 114, y + 12 + deptHeight);
+      doc.text(`Contact: ${comp.officerContact || "N/A"}`, 114, y + 17 + deptHeight);
+      doc.text(`Anonymous: ${comp.isAnonymous ? "Yes (Private)" : "No (Public)"}`, 114, y + 22 + deptHeight);
+
+      y += 46;
+
+      // 4. RESOLUTION TIMELINE
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Real-time Dispatch Audit Trail", 15, y);
+      y += 6;
+
+      // Draw timeline steps
+      comp.timeline.forEach((event, idx) => {
+        // Check page height first, add page if needed
+        if (y > 250) {
+          doc.addPage();
+          y = 20;
+        }
+
+        // Circle node
+        doc.setFillColor(255, 107, 0);
+        doc.circle(20, y + 1, 1.5, "F");
+
+        // Timeline Header
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(15, 23, 42);
+        doc.text(`${idx + 1}. Status Update: ${event.status}`, 26, y + 2);
+
+        // Date & UpdatedBy
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        const dateStr = `${new Date(event.date).toLocaleDateString()} ${new Date(event.date).toLocaleTimeString()}`;
+        doc.text(`${dateStr} | Authored By: ${event.updatedBy}`, 195, y + 2, { align: "right" });
+
+        y += 5;
+
+        // Notes
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(71, 85, 105);
+        const splitNotes = doc.splitTextToSize(event.notes, 165);
+        doc.text(splitNotes, 26, y);
+
+        y += splitNotes.length * 4 + 5;
+      });
+
+      y += 5;
+
+      // 5. CITIZEN FEEDBACK
+      if (comp.citizenRating || comp.citizenFeedback) {
+        if (y > 240) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.setFillColor(240, 253, 250); // emerald-50
+        doc.setDrawColor(209, 250, 229); // emerald-200
+        doc.rect(15, y, 180, 24, "FD");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(6, 95, 70); // emerald-800
+        doc.text(`CITIZEN QUALITY SURVEY: ${comp.citizenRating || 5} / 5 STARS`, 20, y + 7);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(6, 95, 70);
+        const commentText = comp.citizenFeedback ? `"${comp.citizenFeedback}"` : '"Work verified of excellent and clean professional grade."';
+        const splitComment = doc.splitTextToSize(commentText, 170);
+        doc.text(splitComment, 20, y + 13);
+
+        y += 32;
+      }
+
+      // Footer signature (pinned at bottom or y)
+      const footerY = Math.max(y + 15, 280);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(15, footerY - 5, 195, footerY - 5);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(255, 107, 0);
+      doc.text("Crafted with ❤️ by Niket Raj", 15, footerY);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(148, 163, 184); // slate-400
+      doc.text("Designed, Engineered & Crafted by Niket Raj | OneBharat Platform", 195, footerY, { align: "right" });
+
+      // Save PDF
+      doc.save(`OneBharat_Report_${comp.id}.pdf`);
+
+      addNotification(
+        "Report Downloaded", 
+        `PDF summary for ticket ${comp.id} compiled and saved.`, 
+        "success"
+      );
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      addNotification(
+        "Download Failed",
+        "Could not generate PDF. Please try again.",
+        "error"
+      );
+    }
+  };
+
   const isResolved = comp.status === ComplaintStatus.RESOLVED;
   const isClosed = comp.status === ComplaintStatus.CLOSED;
 
@@ -101,7 +365,13 @@ export const ComplaintTracker: React.FC<ComplaintTrackerProps> = ({ complaintId,
           </div>
         </div>
 
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleDownloadReport}
+            className="flex-1 sm:flex-initial px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 text-emerald-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Download className="w-4 h-4 text-emerald-600" /> Download Report
+          </button>
           <button
             onClick={onViewOnMap}
             className="flex-1 sm:flex-initial px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 text-blue-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition-all"

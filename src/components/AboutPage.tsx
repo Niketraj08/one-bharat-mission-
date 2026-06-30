@@ -2,32 +2,12 @@ import React from "react";
 import { OneBharatLogo } from "./OneBharatLogo";
 import { 
   Github, 
-  Linkedin, 
   ExternalLink, 
-  Cpu, 
   Award, 
-  Code, 
-  Terminal, 
-  Compass, 
-  CheckCircle,
-  Globe,
-  Database,
-  Layers
+  Terminal 
 } from "lucide-react";
-import { motion } from "motion/react";
 
 export const AboutPage: React.FC = () => {
-  const techStack = [
-    { name: "React 18", desc: "Core View Library", category: "Frontend" },
-    { name: "TypeScript", desc: "Type-safe robust coding", category: "Language" },
-    { name: "Tailwind CSS", desc: "Atomic utility design system", category: "Styling" },
-    { name: "Framer Motion", desc: "Physics-based fluid interactions", category: "Animation" },
-    { name: "Redux Toolkit", desc: "Predictable state container", category: "State" },
-    { name: "React Query", desc: "Data fetching & synchronization", category: "Data" },
-    { name: "Mapbox GL / D3", desc: "Spatial telemetry & mapping", category: "Geo-visual" },
-    { name: "Vite", desc: "Lightning fast HMR & production bundler", category: "Build Tool" }
-  ];
-
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12" id="about-page-container">
       {/* HEADER SECTION */}
@@ -156,27 +136,6 @@ export const AboutPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* TECH STACK / BUILT WITH GRID */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-[#FF6B00]" />
-          <h4 className="font-sans font-bold text-sm uppercase tracking-wider text-slate-800">
-            System Architecture & Tech Stack
-          </h4>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          {techStack.map((tech, i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:border-[#FF6B00]/40 transition-colors">
-              <span className="text-[8px] font-mono uppercase font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
-                {tech.category}
-              </span>
-              <h5 className="font-sans font-bold text-xs text-slate-800 mt-2">{tech.name}</h5>
-              <p className="text-[10px] text-gray-500 mt-0.5">{tech.desc}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>

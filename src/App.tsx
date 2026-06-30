@@ -285,46 +285,12 @@ function AppContent() {
               </AnimatePresence>
             </div>
 
-            {/* QUICK ROLE SELECTOR FOR TESTING */}
-            <div className="hidden md:flex items-center bg-slate-800/80 rounded-xl p-1 border border-slate-700/60 select-none mr-2">
-              <button
-                onClick={() => setRole(UserRole.CITIZEN)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all tracking-wider cursor-pointer ${
-                  role === UserRole.CITIZEN 
-                    ? "bg-[#FF6B00] text-white shadow-sm" 
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Citizen
-              </button>
-              <button
-                onClick={() => setRole(UserRole.OFFICER)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all tracking-wider cursor-pointer ${
-                  role === UserRole.OFFICER 
-                    ? "bg-[#FF6B00] text-white shadow-sm" 
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Officer
-              </button>
-              <button
-                onClick={() => setRole(UserRole.ADMIN)}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all tracking-wider cursor-pointer ${
-                  role === UserRole.ADMIN 
-                    ? "bg-[#FF6B00] text-white shadow-sm" 
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Admin
-              </button>
-            </div>
-
             {/* USER PROFILE INFO DROPDOWN BUTTON */}
             <div className="right-control-item flex items-center gap-2 border-l border-slate-800 pl-3">
               <div className="text-right hidden lg:block">
                 <p className="text-xs font-bold leading-none text-white">{userName}</p>
                 <span className="text-[9px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">
-                  {role === UserRole.CITIZEN ? "Verified Citizen" : role === UserRole.OFFICER ? "Ward Officer" : "District Admin"}
+                  Verified Citizen
                 </span>
               </div>
               <button
@@ -376,30 +342,7 @@ function AppContent() {
               })}
             </div>
 
-            {/* Mobile Role Switcher */}
-            <div className="border-t border-slate-800 pt-3.5 space-y-2">
-              <p className="text-[10px] font-mono tracking-wider uppercase text-gray-400 px-1">Switch View Role</p>
-              <div className="grid grid-cols-3 gap-1.5 bg-slate-800 rounded-xl p-1 border border-slate-700">
-                <button
-                  onClick={() => { setRole(UserRole.CITIZEN); setMobileMenuOpen(false); }}
-                  className={`py-2 rounded-lg text-[10px] font-bold uppercase transition-all text-center cursor-pointer ${role === UserRole.CITIZEN ? "bg-[#FF6B00] text-white" : "text-gray-400 hover:text-white"}`}
-                >
-                  Citizen
-                </button>
-                <button
-                  onClick={() => { setRole(UserRole.OFFICER); setMobileMenuOpen(false); }}
-                  className={`py-2 rounded-lg text-[10px] font-bold uppercase transition-all text-center cursor-pointer ${role === UserRole.OFFICER ? "bg-[#FF6B00] text-white" : "text-gray-400 hover:text-white"}`}
-                >
-                  Officer
-                </button>
-                <button
-                  onClick={() => { setRole(UserRole.ADMIN); setMobileMenuOpen(false); }}
-                  className={`py-2 rounded-lg text-[10px] font-bold uppercase transition-all text-center cursor-pointer ${role === UserRole.ADMIN ? "bg-[#FF6B00] text-white" : "text-gray-400 hover:text-white"}`}
-                >
-                  Admin
-                </button>
-              </div>
-            </div>
+
 
           </motion.div>
         )}
@@ -452,103 +395,7 @@ function AppContent() {
         </AnimatePresence>
       </main>
 
-      {/* ADDITIONAL COHESIVE ROOT PANEL - DISTRICT AUDIT & FIREBASE CONFIG */}
-      <footer className="bg-slate-100 border-t border-gray-200 py-8 px-4 mt-auto">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          {/* CARD 1: NATIONAL CIVIC PROTOCOL */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-orange-50 text-[#FF6B00] rounded-xl">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <h4 className="font-sans font-bold text-xs text-gray-800 uppercase tracking-wider">
-                  Civic Protocol
-                </h4>
-              </div>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
-                OneBharat utilizes secure national database protocols to instantly dispatch civic notifications and verification tickets to municipal desk officers.
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 self-start">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>Database Secured</span>
-            </div>
-          </div>
 
-          {/* CARD 2: FIREBASE SECURE SYSTEM GATEWAY (SHOW/HIDE API KEY) */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-orange-50 text-[#FF6B00] rounded-xl">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <h4 className="font-sans font-bold text-xs text-gray-800 uppercase tracking-wider">
-                  Sandbox Credentials
-                </h4>
-              </div>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
-                OneBharat operates on a secure Firebase database backend. View the verified system credentials below:
-              </p>
-            </div>
-
-            <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-gray-200 font-mono text-[9px] text-gray-600 relative">
-              <p className="text-gray-400">PROJECT ID:</p>
-              <p className="font-bold text-gray-700 truncate">striped-inquiry-419615</p>
-              
-              <div className="border-t border-gray-200/60 my-1.5 pt-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400">API KEY:</span>
-                  <button
-                    type="button"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                    className="p-1 hover:bg-gray-200 text-gray-500 hover:text-[#FF6B00] rounded transition-all flex items-center gap-1 cursor-pointer animate-pulse"
-                    title={showApiKey ? "Hide Key" : "Show Key"}
-                  >
-                    {showApiKey ? (
-                      <>
-                        <EyeOff className="w-3.5 h-3.5" />
-                        <span className="text-[8px] font-bold">Hide</span>
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="w-3.5 h-3.5" />
-                        <span className="text-[8px] font-bold">Show</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <p className="font-bold text-gray-800 tracking-tight font-mono truncate mt-0.5 select-all">
-                  {showApiKey ? "AIzaSyBPOws4NoxcGK-HjHCiCQY89H-84sjOgVM" : "••••••••••••••••••••••••••••••••••••"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* CARD 3: BIHAR DISTRICT SUPER-NETWORK DIRECTORY */}
-          <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 shadow-lg space-y-3 flex flex-col justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-slate-800 text-[#FF6B00] rounded-xl">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <h4 className="font-sans font-bold text-xs text-orange-400 uppercase tracking-wider">
-                  Nodal Ward Dispatch
-                </h4>
-              </div>
-              <p className="text-[11px] text-slate-300 leading-relaxed">
-                Unified dispatch routers connect Sonpur Ward Central with the Hajipur Regional Corporator Cell to ensure instant local crew mobilization.
-              </p>
-            </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-gray-400 border-t border-slate-800 pt-2">
-              <span>Saran-Vaishali Hub</span>
-              <span className="text-[#FF6B00] font-bold">98.4% SLA</span>
-            </div>
-          </div>
-
-        </div>
-      </footer>
 
       {/* INTEGRATED FLOATING TOASTS NOTIFICATIONS RENDER */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full">

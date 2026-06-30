@@ -83,27 +83,27 @@ export const MobileAppPage: React.FC = () => {
     }
 
     setIsGenerating(true);
-    addNotification("Compiling APK", "Generating secure Android package signature...", "info");
+    addNotification("Generating Download Package", "Assembling simulated package descriptor...", "info");
 
     setTimeout(() => {
       setIsGenerating(false);
       setFormSubmitted(true);
       setDownloadStep(1);
-      addNotification("SMS/Email Sent", "Direct secure download link dispatched successfully!", "success");
+      addNotification("SMS/Email Dispatched", "Simulated APK package transfer link sent!", "success");
 
       // Trigger actual mock APK file download in browser
       setTimeout(() => {
         setDownloadStep(2);
         // We trigger download of a mock apk file name
         const element = document.createElement("a");
-        const file = new Blob(["Simulated OneBharat APK Package Content - Complete Production Build."], { type: "text/plain" });
+        const file = new Blob(["Simulation Package: OneBharat Android APK Simulation Build. To run the full live app on your phone, please use the PWA 'Add to Home Screen' installation guide displayed below."], { type: "text/plain" });
         element.href = URL.createObjectURL(file);
-        element.download = "OneBharat_v2.1_Saran_Release.apk";
+        element.download = "OneBharat_v2.1_Saran_Simulation.apk";
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
         
-        addNotification("Download Started", "OneBharat Android APK download initiated.", "success");
+        addNotification("Download Started", "Demonstrative APK file download started.", "info");
       }, 1500);
 
     }, 2000);
@@ -112,6 +112,29 @@ export const MobileAppPage: React.FC = () => {
   return (
     <div id="mobile-app-pwa-page" className="max-w-4xl mx-auto space-y-8">
       
+      {/* EXPLANATORY ALERT BANNER FOR PARSE ERROR */}
+      <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-5 md:p-6 text-amber-900 space-y-3.5 shadow-sm">
+        <div className="flex items-center gap-2 text-amber-700">
+          <Info className="w-5 h-5 shrink-0" />
+          <h3 className="font-sans font-black text-sm uppercase tracking-wide">
+            Solving Mobile "Problem Parsing the Package" & "App Not Installed" Errors
+          </h3>
+        </div>
+        <div className="text-xs space-y-2 text-amber-800 leading-relaxed">
+          <p>
+            <strong>Why did you get a parsing error?</strong> Real Android APK installers are binary codebases that require compiling via an Android Gradle Compiler & JVM (Java Virtual Machine). Because this sandbox is a web browser workspace environment, any downloadable <code>.apk</code> generated on-the-fly is a <strong>simulated demonstration text package</strong>. When Android tries to parse a text descriptor as binary, it throws the <em>"Problem parsing the package"</em> error.
+          </p>
+          <div className="bg-white/70 rounded-2xl p-3.5 border border-amber-200/50 space-y-1.5">
+            <p className="font-bold text-amber-900 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#FF6B00]" /> Use the Progressive Web App (PWA) Solution Instead (100% Working!)
+            </p>
+            <p>
+              To run OneBharat as a native app on your phone right now with <strong>full offline geolocation, local storage synchronization, and premium camera logging</strong>, install the genuine PWA. It is 100% lightweight, secure, and has its own desktop/mobile launcher icon! Follow the simple guides below.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* HERO SECTION */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl border border-slate-800">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF6B00]/10 rounded-full blur-3xl pointer-events-none" />
@@ -219,11 +242,39 @@ export const MobileAppPage: React.FC = () => {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-4 h-4 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[9px] font-bold shrink-0 mt-0.5">2</span>
-                  <span><strong>Instant Updates</strong>: Always stays synced to the latest NIC release automatic.</span>
+                  <span><strong>Instant Updates</strong>: Always stays synced to the latest NIC release automatically.</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="w-4 h-4 rounded-full bg-[#FF6B00]/10 text-[#FF6B00] flex items-center justify-center text-[9px] font-bold shrink-0 mt-0.5">3</span>
                   <span><strong>Home Screen Icon</strong>: Access directly from your phone app list.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* DEVICE SPECIFIC GUIDES */}
+            <div className="space-y-2 pt-1 border-t border-slate-100">
+              <h4 className="text-[10px] font-mono font-bold text-gray-400 uppercase">Device-Specific Quick Install Guide</h4>
+              <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-600">
+                <div className="p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl space-y-1">
+                  <p className="font-bold text-blue-900 flex items-center gap-1">
+                    <Chrome className="w-3 h-3 text-blue-600" /> Android (Chrome)
+                  </p>
+                  <ol className="list-decimal pl-3 space-y-0.5 leading-normal">
+                    <li>Open this site in Chrome</li>
+                    <li>Tap the <strong>3 dots (⋮)</strong> menu</li>
+                    <li>Select <strong>Add to Home screen</strong> or <strong>Install app</strong></li>
+                  </ol>
+                </div>
+
+                <div className="p-2.5 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-1">
+                  <p className="font-bold text-indigo-900 flex items-center gap-1">
+                    <Compass className="w-3 h-3 text-indigo-600" /> iPhone / iOS (Safari)
+                  </p>
+                  <ol className="list-decimal pl-3 space-y-0.5 leading-normal">
+                    <li>Open this site in Safari</li>
+                    <li>Tap the <strong>Share (📤)</strong> icon</li>
+                    <li>Scroll and select <strong>Add to Home Screen</strong></li>
+                  </ol>
                 </div>
               </div>
             </div>

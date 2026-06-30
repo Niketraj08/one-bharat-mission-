@@ -68,8 +68,26 @@ export const MobileAppPage: React.FC = () => {
         addNotification("PWA Installed", "OneBharat successfully added to your device!", "success");
       }
     } else {
-      // Direct, interactive installation dialog overlay
+      // Direct, automated installation progress bypasses any suggestion/instruction screens
       setShowDirectInstallModal(true);
+      setIsInstalling(true);
+      setSimProgress(0);
+      
+      const interval = setInterval(() => {
+        setSimProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              setIsInstalling(false);
+              setIsPwaInstalled(true);
+              setShowDirectInstallModal(false);
+              addNotification("OneBharat Installed", "PWA shortcut successfully registered on your home screen!", "success");
+            }, 400);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 150);
     }
   };
 
@@ -248,9 +266,7 @@ export const MobileAppPage: React.FC = () => {
             <p className="text-xs text-gray-600 leading-relaxed max-w-xl">
               {isPwaInstalled 
                 ? "Excellent! OneBharat is running in native app mode on your home screen. Open your apps list or desktop to start logging citizen reports instantly." 
-                : deferredPrompt 
-                  ? "We detected support for direct installation! Click the install button below to add OneBharat instantly with premium standalone features."
-                  : "Experience robust offline reports, camera logs, and direct push alerts. No heavy APK installer downloads needed, simply tap below or use your browser menu!"
+                : "Experience robust offline reports, camera logs, and direct push alerts. Tap the button below to install the app on your home screen instantly!"
               }
             </p>
           </div>
@@ -268,7 +284,7 @@ export const MobileAppPage: React.FC = () => {
               className="w-full md:w-auto px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer border border-transparent"
             >
               <Smartphone className="w-4 h-4 text-[#FF6B00]" /> 
-              {deferredPrompt ? "Install OneBharat App" : "How to Add to Device"}
+              Install OneBharat App
             </button>
           )}
         </div>

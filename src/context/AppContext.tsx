@@ -122,8 +122,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addNotification = (title: string, message: string, type: "info" | "success" | "warning" | "alert") => {
+    const randomSuffix = Math.random().toString(36).substring(2, 9);
     const newNotif = {
-      id: "not-" + Date.now(),
+      id: `not-${Date.now()}-${randomSuffix}`,
       title,
       message,
       time: "Just Now",

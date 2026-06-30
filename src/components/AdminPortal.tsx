@@ -706,8 +706,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                     return (
                       <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-3 pl-2 font-mono font-bold text-[#FF6B00]">{c.id}</td>
-                        <td className="py-3">
-                          <div className="font-semibold text-gray-900 leading-tight">{c.category}</div>
+                        <td className="py-3 min-w-0 overflow-hidden">
+                          <div className="font-semibold text-gray-900 leading-tight truncate">{c.category}</div>
                           <div className="text-gray-400 text-[10px] truncate max-w-[140px] sm:max-w-[180px] md:max-w-[260px] block" title={c.title}>{c.title}</div>
                         </td>
                         <td className="py-3">
@@ -766,7 +766,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                     : "bg-slate-100 text-slate-700 border-slate-200";
 
                 return (
-                  <div key={c.id} className="p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl space-y-2.5">
+                  <div key={c.id} className="p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl space-y-2.5 overflow-hidden w-full min-w-0 break-words">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="font-mono font-bold text-[#FF6B00] text-xs">{c.id}</span>
                       <span className="text-[10px] text-gray-500 font-mono truncate max-w-[150px]" title={c.location?.ward}>{c.location?.ward || "Ward No. 4"}</span>

@@ -23,7 +23,8 @@ import {
   EyeOff, 
   Eye,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -33,7 +34,7 @@ interface ComplaintFlowProps {
 }
 
 export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCancel }) => {
-  const { addComplaint, citizenProfile } = useApp();
+  const { addComplaint, citizenProfile, addNotification } = useApp();
 
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState<ComplaintCategory | null>(null);
@@ -50,6 +51,11 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
   const [isDragging, setIsDragging] = useState(false);
   const [aiSuggestedCategory, setAiSuggestedCategory] = useState<ComplaintCategory | null>(null);
   const [aiSuggestedReason, setAiSuggestedReason] = useState("");
+
+  // Upload progress tracking
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState(0);
+  const [uploadingFiles, setUploadingFiles] = useState<{ name: string; size: number }[]>([]);
   
   // Details
   const [description, setDescription] = useState("");
@@ -63,84 +69,116 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
 
   // Process dropped or selected files
   const processFiles = (fileList: FileList | File[]) => {
-    const filesArray = Array.from(fileList);
-    
-    filesArray.forEach((file) => {
-      // Ensure file is an image
-      if (!file.type.startsWith("image/")) {
-        return;
-      }
+    const filesArray = Array.from(fileList).filter(file => file.type.startsWith("image/") || file.type.startsWith("video/"));
+    if (filesArray.length === 0) return;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result && typeof e.target.result === "string") {
-          const base64Data = e.target.result;
-          setImages((prev) => [...prev, base64Data]);
-          
-          // Trigger intelligent name-based AI Category Suggestion!
-          const filename = file.name.toLowerCase();
-          let predictedCat: ComplaintCategory | null = null;
-          let reason = "";
+    setIsUploading(true);
+    setUploadPercent(0);
+    setUploadingFiles(filesArray.map(f => ({ name: f.name, size: f.size })));
 
-          if (filename.includes("pothole") || filename.includes("road") || filename.includes("crack") || filename.includes("paved") || filename.includes("crater")) {
-            predictedCat = ComplaintCategory.ROAD_DAMAGE;
-            reason = `the image filename "${file.name}" indicates road damage or craters`;
-          } else if (filename.includes("light") || filename.includes("lamp") || filename.includes("bulb") || filename.includes("dark") || filename.includes("pole") || filename.includes("street-light") || filename.includes("street_light")) {
-            predictedCat = ComplaintCategory.STREET_LIGHT;
-            reason = `the image filename "${file.name}" indicates broken street lights or dark spots`;
-          } else if (filename.includes("garbage") || filename.includes("trash") || filename.includes("rubbish") || filename.includes("waste") || filename.includes("dump") || filename.includes("overflowing_bin")) {
-            predictedCat = ComplaintCategory.GARBAGE;
-            reason = `the image filename "${file.name}" indicates uncollected waste or litter piles`;
-          } else if (filename.includes("leak") || filename.includes("pipe") || filename.includes("water_leak")) {
-            predictedCat = ComplaintCategory.WATER_LEAKAGE;
-            reason = `the image filename "${file.name}" indicates fresh water pipeline burst/leakage`;
-          } else if (filename.includes("sewer") || filename.includes("drain") || filename.includes("manhole") || filename.includes("gutter") || filename.includes("sewage")) {
-            predictedCat = ComplaintCategory.DRAINAGE;
-            reason = `the image filename "${file.name}" suggests drainage blockage or open sewer manholes`;
-          } else if (filename.includes("flood") || filename.includes("flooding")) {
-            predictedCat = ComplaintCategory.FLOOD;
-            reason = `the image filename "${file.name}" indicates heavy monsoonal flash flooding`;
-          } else if (filename.includes("water logging") || filename.includes("water_logging") || filename.includes("stagnant") || filename.includes("clog")) {
-            predictedCat = ComplaintCategory.WATER_LOGGING;
-            reason = `the image filename "${file.name}" indicates stormwater logging on streets`;
-          } else if (filename.includes("parking") || filename.includes("car") || filename.includes("bike") || filename.includes("obstruct")) {
-            predictedCat = ComplaintCategory.ILLEGAL_PARKING;
-            reason = `the image filename "${file.name}" indicates vehicular sidewalk obstruction`;
-          } else if (filename.includes("footpath") || filename.includes("pavement") || filename.includes("walkway")) {
-            predictedCat = ComplaintCategory.BROKEN_FOOTPATH;
-            reason = `the image filename "${file.name}" indicates broken slabs or construction on pedestrian paths`;
-          } else if (filename.includes("signal") || filename.includes("traffic")) {
-            predictedCat = ComplaintCategory.TRAFFIC_SIGNAL;
-            reason = `the image filename "${file.name}" indicates a malfunctioning junction signal`;
-          } else if (filename.includes("animal") || filename.includes("rescue") || filename.includes("dog") || filename.includes("cow") || filename.includes("stray")) {
-            predictedCat = ComplaintCategory.ANIMAL_RESCUE;
-            reason = `the image filename "${file.name}" indicates stray animal distress or rescue requirement`;
-          } else if (filename.includes("tree") || filename.includes("branch") || filename.includes("fallen")) {
-            predictedCat = ComplaintCategory.TREE_FALLEN;
-            reason = `the image filename "${file.name}" indicates a heavy fallen tree blocking lines/paths`;
-          } else if (filename.includes("debris") || filename.includes("brick") || filename.includes("construction_waste")) {
-            predictedCat = ComplaintCategory.CONSTRUCTION_WASTE;
-            reason = `the image filename "${file.name}" suggests illegal construction material dump`;
-          } else if (filename.includes("loud") || filename.includes("speaker") || filename.includes("noise")) {
-            predictedCat = ComplaintCategory.NOISE_POLLUTION;
-            reason = `the image filename "${file.name}" indicates late-night noise violations`;
-          } else if (filename.includes("toilet") || filename.includes("public_toilet")) {
-            predictedCat = ComplaintCategory.PUBLIC_TOILET;
-            reason = `the image filename "${file.name}" suggests unhygienic public restrooms`;
-          }
-
-          if (predictedCat) {
-            setAiSuggestedCategory(predictedCat);
-            setAiSuggestedReason(reason);
-            // Auto apply if category is not set yet
-            if (!category) {
-              setCategory(predictedCat);
+    let currentPercent = 0;
+    const interval = setInterval(() => {
+      currentPercent += Math.floor(Math.random() * 15) + 8;
+      if (currentPercent >= 100) {
+        currentPercent = 100;
+        clearInterval(interval);
+        
+        let filesProcessedCount = 0;
+        filesArray.forEach((file) => {
+          if (file.type.startsWith("video/")) {
+            // For mock/preview purposes, represent video uploads as a premium icon or short mockup base64/placeholder
+            setImages((prev) => [...prev, "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=600"]);
+            setIsVideoRecorded(true);
+            filesProcessedCount++;
+            if (filesProcessedCount === filesArray.length) {
+              setIsUploading(false);
+              setUploadingFiles([]);
+              addNotification(
+                "Upload Complete",
+                `Successfully processed ${filesArray.length} multi-media asset(s).`,
+                "success"
+              );
             }
+            return;
           }
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            if (e.target?.result && typeof e.target.result === "string") {
+              const base64Data = e.target.result;
+              setImages((prev) => [...prev, base64Data]);
+              
+              // Trigger intelligent name-based AI Category Suggestion!
+              const filename = file.name.toLowerCase();
+              let predictedCat: ComplaintCategory | null = null;
+              let reason = "";
+
+              if (filename.includes("pothole") || filename.includes("road") || filename.includes("crack") || filename.includes("paved") || filename.includes("crater")) {
+                predictedCat = ComplaintCategory.ROAD_DAMAGE;
+                reason = `the image filename "${file.name}" indicates road damage or craters`;
+              } else if (filename.includes("light") || filename.includes("lamp") || filename.includes("bulb") || filename.includes("dark") || filename.includes("pole") || filename.includes("street-light") || filename.includes("street_light")) {
+                predictedCat = ComplaintCategory.STREET_LIGHT;
+                reason = `the image filename "${file.name}" indicates broken street lights or dark spots`;
+              } else if (filename.includes("garbage") || filename.includes("trash") || filename.includes("rubbish") || filename.includes("waste") || filename.includes("dump") || filename.includes("overflowing_bin")) {
+                predictedCat = ComplaintCategory.GARBAGE;
+                reason = `the image filename "${file.name}" indicates uncollected waste or litter piles`;
+              } else if (filename.includes("leak") || filename.includes("pipe") || filename.includes("water_leak")) {
+                predictedCat = ComplaintCategory.WATER_LEAKAGE;
+                reason = `the image filename "${file.name}" indicates fresh water pipeline burst/leakage`;
+              } else if (filename.includes("sewer") || filename.includes("drain") || filename.includes("manhole") || filename.includes("gutter") || filename.includes("sewage")) {
+                predictedCat = ComplaintCategory.DRAINAGE;
+                reason = `the image filename "${file.name}" suggests drainage blockage or open sewer manholes`;
+              } else if (filename.includes("flood") || filename.includes("flooding")) {
+                predictedCat = ComplaintCategory.FLOOD;
+                reason = `the image filename "${file.name}" indicates heavy monsoonal flash flooding`;
+              } else if (filename.includes("water logging") || filename.includes("water_logging") || filename.includes("stagnant") || filename.includes("clog")) {
+                predictedCat = ComplaintCategory.WATER_LOGGING;
+                reason = `the image filename "${file.name}" indicates stormwater logging on streets`;
+              } else if (filename.includes("parking") || filename.includes("car") || filename.includes("bike") || filename.includes("obstruct")) {
+                predictedCat = ComplaintCategory.ILLEGAL_PARKING;
+                reason = `the image filename "${file.name}" indicates vehicular sidewalk obstruction`;
+              } else if (filename.includes("footpath") || filename.includes("pavement") || filename.includes("walkway")) {
+                predictedCat = ComplaintCategory.BROKEN_FOOTPATH;
+                reason = `the image filename "${file.name}" indicates broken tiles/blockage on public footpath`;
+              } else if (filename.includes("signal") || filename.includes("traffic")) {
+                predictedCat = ComplaintCategory.TRAFFIC_SIGNAL;
+                reason = `the image filename "${file.name}" indicates a malfunctioning junction signal`;
+              } else if (filename.includes("animal") || filename.includes("rescue") || filename.includes("dog") || filename.includes("cow") || filename.includes("stray")) {
+                predictedCat = ComplaintCategory.ANIMAL_RESCUE;
+                reason = `the image filename "${file.name}" indicates stray animal distress or rescue requirement`;
+              } else if (filename.includes("tree") || filename.includes("branch") || filename.includes("fallen")) {
+                predictedCat = ComplaintCategory.TREE_FALLEN;
+                reason = `the image filename "${file.name}" indicates a heavy fallen tree blocking lines/paths`;
+              } else if (filename.includes("debris") || filename.includes("brick") || filename.includes("construction_waste")) {
+                predictedCat = ComplaintCategory.CONSTRUCTION_WASTE;
+                reason = `the image filename "${file.name}" suggests illegal construction material dump`;
+              } else if (filename.includes("loud") || filename.includes("speaker") || filename.includes("noise")) {
+                predictedCat = ComplaintCategory.NOISE_POLLUTION;
+                reason = `the image filename "${file.name}" indicates excessive civic noise violations`;
+              }
+
+              if (predictedCat) {
+                setAiSuggestedCategory(predictedCat);
+                setAiSuggestedReason(reason);
+              }
+            }
+            filesProcessedCount++;
+            if (filesProcessedCount === filesArray.length) {
+              setIsUploading(false);
+              setUploadingFiles([]);
+              addNotification(
+                "Upload Complete",
+                `Successfully processed ${filesArray.length} multi-media asset(s).`,
+                "success"
+              );
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        setUploadPercent(currentPercent);
+      }
+    }, 100);
   };
 
   // Auto classification suggestion mock from text description
@@ -198,14 +236,50 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
 
   // Mock taking/uploading photos
   const handlePhotoUpload = () => {
-    // Add realistic garbage / potholes Unsplash placeholder images
-    const placeholderImages = [
-      "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1542060748-10c28b629f6f?auto=format&fit=crop&q=80&w=600"
-    ];
-    const chosen = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
-    setImages((prev) => [...prev, chosen]);
+    setIsUploading(true);
+    setUploadPercent(0);
+    setUploadingFiles([{ name: "demo-auto-mockup.jpg", size: 1245000 }]);
+
+    let currentPercent = 0;
+    const interval = setInterval(() => {
+      currentPercent += Math.floor(Math.random() * 20) + 12;
+      if (currentPercent >= 100) {
+        currentPercent = 100;
+        clearInterval(interval);
+        
+        const placeholderImages = [
+          "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&q=80&w=600",
+          "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&q=80&w=600",
+          "https://images.unsplash.com/photo-1542060748-10c28b629f6f?auto=format&fit=crop&q=80&w=600"
+        ];
+        const chosen = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
+        setImages((prev) => [...prev, chosen]);
+        
+        // Randomly set a predictive category to showcase the flow
+        const categories = [ComplaintCategory.ROAD_DAMAGE, ComplaintCategory.GARBAGE, ComplaintCategory.WATER_LOGGING];
+        const chosenCat = categories[Math.floor(Math.random() * categories.length)];
+        let reason = "";
+        if (chosenCat === ComplaintCategory.ROAD_DAMAGE) {
+          reason = "the visual structure detected has clear crater depressions and cracks in asphalt";
+        } else if (chosenCat === ComplaintCategory.GARBAGE) {
+          reason = "the image exhibits unsegregated plastic bags, decomposing organic matter, and overflowing receptacles";
+        } else {
+          reason = "the uploaded media shows significant stagnant runoff on paved surfaces obstructing pedestrian walk areas";
+        }
+        setAiSuggestedCategory(chosenCat);
+        setAiSuggestedReason(reason);
+
+        setIsUploading(false);
+        setUploadingFiles([]);
+        addNotification(
+          "Demo File Uploaded",
+          "Mockup civic issue photo successfully added with high fidelity.",
+          "success"
+        );
+      } else {
+        setUploadPercent(currentPercent);
+      }
+    }, 100);
   };
 
   // Run AI checks on submit before redirecting
@@ -499,6 +573,37 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
                 </button>
               </div>
             </div>
+
+            {/* Modern Animated Progress Indicator */}
+            {isUploading && (
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 space-y-3 shadow-sm animate-pulse-slow">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-700">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-[#FF6B00] animate-spin" />
+                    <span>Processing & Uploading proof files...</span>
+                  </div>
+                  <span className="font-mono text-gray-500">{uploadPercent}%</span>
+                </div>
+                
+                {/* Modern progress track */}
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-[#FF6B00] h-full transition-all duration-150 ease-out"
+                    style={{ width: `${uploadPercent}%` }}
+                  />
+                </div>
+                
+                {/* Uploading files listing */}
+                <div className="text-[10px] text-gray-500 font-mono space-y-1 bg-white p-2.5 rounded-xl border border-slate-100 max-h-24 overflow-y-auto">
+                  {uploadingFiles.map((f, i) => (
+                    <div key={i} className="flex justify-between items-center gap-4">
+                      <span className="truncate max-w-[200px] font-semibold text-gray-700">{f.name}</span>
+                      <span className="shrink-0">{(f.size / (1024 * 1024)).toFixed(2)} MB</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* AI Real-time Category Suggestion Box */}
             {aiSuggestedCategory && (

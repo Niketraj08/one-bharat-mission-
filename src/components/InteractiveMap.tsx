@@ -89,6 +89,16 @@ export const InteractiveMap: React.FC = () => {
     });
   }, [complaints, selectedCategory, selectedPriority, searchQuery]);
 
+  const unresolvedComplaints = useMemo(() => {
+    return complaints.filter((c) => {
+      return (
+        c.status === ComplaintStatus.SUBMITTED ||
+        c.status === ComplaintStatus.DISPATCHED ||
+        c.status === ComplaintStatus.IN_PROGRESS
+      );
+    });
+  }, [complaints]);
+
   // Handle Marker click
   const handleMarkerClick = (comp: Complaint) => {
     setZoomedComplaint(comp);
@@ -134,6 +144,23 @@ export const InteractiveMap: React.FC = () => {
                     <stop offset="0%" stopColor="#FF6B00" stopOpacity="0.45" />
                     <stop offset="100%" stopColor="#FF6B00" stopOpacity="0" />
                   </radialGradient>
+                  <radialGradient id="heat-glow-critical" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#EF4444" stopOpacity="0.75" />
+                    <stop offset="45%" stopColor="#F97316" stopOpacity="0.4" />
+                    <stop offset="80%" stopColor="#EAB308" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="heat-glow-high" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#F97316" stopOpacity="0.65" />
+                    <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.3" />
+                    <stop offset="85%" stopColor="#EAB308" stopOpacity="0.1" />
+                    <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="heat-glow-medium" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#EAB308" stopOpacity="0.55" />
+                    <stop offset="60%" stopColor="#3B82F6" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#EAB308" stopOpacity="0" />
+                  </radialGradient>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid-pattern)" />
               </svg>
@@ -171,19 +198,45 @@ export const InteractiveMap: React.FC = () => {
                   </g>
                 ))}
 
-                {/* Heat Map Dense Zones Simulation */}
-                {showHeatMap && complaints.map((c, idx) => {
+                 {/* Heat Map Dense Zones for Unresolved Complaints */}
+                {showHeatMap && unresolvedComplaints.map((c, idx) => {
                   const { x, y } = getCoordinatesPercent(c.location.latitude, c.location.longitude);
+                  const gradientId = 
+                    c.priority === ComplaintPriority.EMERGENCY 
+                      ? "url(#heat-glow-critical)" 
+                      : c.priority === ComplaintPriority.HIGH 
+                      ? "url(#heat-glow-high)" 
+                      : "url(#heat-glow-medium)";
+                      
+                  const radius = 
+                    c.priority === ComplaintPriority.EMERGENCY 
+                      ? 65 
+                      : c.priority === ComplaintPriority.HIGH 
+                      ? 48 
+                      : 35;
+                      
                   return (
-                    <circle 
-                      key={`heat-${idx}`}
-                      cx={`${x}%`} 
-                      cy={`${y}%`} 
-                      r={c.priority === ComplaintPriority.EMERGENCY ? "55" : "38"} 
-                      fill="url(#heat-glow)"
-                      className="animate-pulse"
-                      style={{ animationDuration: `${2 + idx % 3}s` }}
-                    />
+                    <g key={`heat-${c.id}-${idx}`}>
+                      {/* Innermost core hot spot */}
+                      <circle 
+                        cx={`${x}%`} 
+                        cy={`${y}%`} 
+                        r={radius * 0.3} 
+                        fill={c.priority === ComplaintPriority.EMERGENCY ? "#EF4444" : "#F97316"}
+                        opacity="0.3"
+                        className="animate-ping"
+                        style={{ animationDuration: "2s" }}
+                      />
+                      {/* Medium glow region */}
+                      <circle 
+                        cx={`${x}%`} 
+                        cy={`${y}%`} 
+                        r={radius} 
+                        fill={gradientId}
+                        className="animate-pulse"
+                        style={{ animationDuration: `${3 + idx % 3}s` }}
+                      />
+                    </g>
                   );
                 })}
 
@@ -304,7 +357,13 @@ export const InteractiveMap: React.FC = () => {
           {/* Map Layer Overlays */}
           <div className="bg-gray-900/95 border border-gray-800 rounded-xl p-1.5 backdrop-blur-md flex flex-col gap-1.5 text-center">
             <button
-              onClick={() => setShowHeatMap(!showHeatMap)}
+              onClick={() => {
+                const nextVal = !showHeatMap;
+                setShowHeatMap(nextVal);
+                if (nextVal && mapMode === "google") {
+                  setMapMode("dark");
+                }
+              }}
               className={`p-2 rounded-lg text-[9px] transition-all flex flex-col items-center justify-center ${showHeatMap ? "bg-amber-600/30 text-[#FF6B00] border border-[#FF6B00]/40" : "text-gray-400 hover:text-white"}`}
             >
               <Sparkles className="w-4 h-4 mb-0.5" />
@@ -511,6 +570,109 @@ export const InteractiveMap: React.FC = () => {
                 >
                   Full Details <ChevronRight className="w-3 h-3 ml-0.5" />
                 </button>
+              </div>
+            </motion.div>
+          ) : showHeatMap ? (
+            <motion.div
+              key="heatmap-analyst"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col h-full overflow-y-auto p-4 space-y-4"
+            >
+              {/* Heatmap Analyst Panel */}
+              <div className="flex items-center gap-2 border-b border-gray-800 pb-2">
+                <Sparkles className="w-5 h-5 text-[#FF6B00] animate-pulse" />
+                <div>
+                  <h4 className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Hotspot Analytics</h4>
+                  <h3 className="text-xs font-black text-white">Infrastructure Planner</h3>
+                </div>
+              </div>
+
+              {/* Density Metrics */}
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs space-y-1.5">
+                <div className="flex justify-between font-mono">
+                  <span className="text-amber-400">Unresolved Issues:</span>
+                  <span className="font-bold text-white">{unresolvedComplaints.length}</span>
+                </div>
+                <div className="flex justify-between font-mono">
+                  <span className="text-red-400">Critical Hotspots:</span>
+                  <span className="font-bold text-white">
+                    {unresolvedComplaints.filter(c => c.priority === ComplaintPriority.EMERGENCY || c.priority === ComplaintPriority.HIGH).length}
+                  </span>
+                </div>
+                <div className="text-[10px] text-amber-300/80 leading-normal pt-1">
+                  High-density hotspots identified based on cluster proximity and complaint frequency.
+                </div>
+              </div>
+
+              {/* Recommended Infrastructure Allocation */}
+              <div className="space-y-2">
+                <p className="text-[10px] uppercase font-mono tracking-wider text-gray-400">Recommended Allocation</p>
+                <div className="space-y-1.5">
+                  {(() => {
+                    const roadDamageCount = unresolvedComplaints.filter(c => c.category === ComplaintCategory.ROAD_DAMAGE || c.category === ComplaintCategory.BROKEN_FOOTPATH).length;
+                    const waterCount = unresolvedComplaints.filter(c => c.category === ComplaintCategory.WATER_LOGGING || c.category === ComplaintCategory.DRAINAGE || c.category === ComplaintCategory.SEWAGE_OVERFLOW || c.category === ComplaintCategory.FLOOD).length;
+                    const electricityCount = unresolvedComplaints.filter(c => c.category === ComplaintCategory.ELECTRICITY || c.category === ComplaintCategory.TRANSFORMER || c.category === ComplaintCategory.STREET_LIGHT).length;
+                    const garbageCount = unresolvedComplaints.filter(c => c.category === ComplaintCategory.GARBAGE || c.category === ComplaintCategory.ILLEGAL_DUMPING || c.category === ComplaintCategory.CONSTRUCTION_WASTE).length;
+
+                    return (
+                      <>
+                        {roadDamageCount > 0 && (
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-gray-950/40 border border-gray-800 text-[11px]">
+                            <span className="text-gray-300 font-mono">🚚 Asphalt Patchers</span>
+                            <span className="text-[#FF6B00] font-black">{Math.ceil(roadDamageCount / 2)} Units</span>
+                          </div>
+                        )}
+                        {waterCount > 0 && (
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-gray-950/40 border border-gray-800 text-[11px]">
+                            <span className="text-gray-300 font-mono">🌊 High-capacity Pumps</span>
+                            <span className="text-blue-400 font-black">{Math.ceil(waterCount / 2)} Units</span>
+                          </div>
+                        )}
+                        {electricityCount > 0 && (
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-gray-950/40 border border-gray-800 text-[11px]">
+                            <span className="text-gray-300 font-mono">🪜 Grid Utility Trucks</span>
+                            <span className="text-yellow-400 font-black">{Math.ceil(electricityCount / 2)} Units</span>
+                          </div>
+                        )}
+                        {garbageCount > 0 && (
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-gray-950/40 border border-gray-800 text-[11px]">
+                            <span className="text-gray-300 font-mono">♻️ Sanitation Crews</span>
+                            <span className="text-green-400 font-black">{Math.ceil(garbageCount / 2)} Teams</span>
+                          </div>
+                        )}
+                        {unresolvedComplaints.length === 0 && (
+                          <div className="text-xs text-gray-400 italic py-2 text-center">
+                            No active unresolved complaints. All clear!
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = "fixed bottom-5 right-5 bg-green-600 text-white font-bold text-xs px-4 py-3 rounded-xl shadow-2xl z-50 animate-bounce";
+                    alertDiv.innerText = "🚨 Rapid Infrastructure Units successfully routed to top hotspots!";
+                    document.body.appendChild(alertDiv);
+                    setTimeout(() => alertDiv.remove(), 4000);
+                  }}
+                  className="w-full py-2 bg-[#FF6B00] hover:bg-orange-600 text-white text-xs font-black rounded-xl transition-all shadow-md active:scale-95 cursor-pointer text-center flex items-center justify-center gap-1.5"
+                >
+                  <Award className="w-4 h-4 text-white" />
+                  Route Infrastructure Units
+                </button>
+                
+                <div className="text-[9px] text-gray-500 font-mono text-center">
+                  Data syncs live with State Nodal Agencies
+                </div>
               </div>
             </motion.div>
           ) : (

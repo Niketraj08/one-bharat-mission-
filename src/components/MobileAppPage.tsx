@@ -21,9 +21,19 @@ import {
   Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { QRCodeSVG } from "qrcode.react";
+import { OneBharatLogo } from "./OneBharatLogo";
 
 export const MobileAppPage: React.FC = () => {
   const { addNotification } = useApp();
+  
+  // App URL for QR Code
+  const [appUrl, setAppUrl] = useState("https://sonpur.netlify.app/");
+
+  useEffect(() => {
+    // Keep it fixed to the requested link
+    setAppUrl("https://sonpur.netlify.app/");
+  }, []);
   
   // PWA Prompt states
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -150,90 +160,6 @@ export const MobileAppPage: React.FC = () => {
   return (
     <div id="mobile-app-pwa-page" className="max-w-4xl mx-auto space-y-8">
       
-      {/* DIRECT PWA INSTALL MODAL */}
-      <AnimatePresence>
-        {showDirectInstallModal && (
-          <div id="direct-install-modal-overlay" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white rounded-3xl p-6 max-w-sm w-full border border-slate-200 shadow-2xl space-y-5"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00] shrink-0 border border-[#FF6B00]/20">
-                  <Smartphone className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-sans font-black text-gray-950 text-base leading-tight">Install OneBharat</h3>
-                  <p className="text-[10px] text-gray-400 font-mono">onebharat.gov.in • Web App</p>
-                </div>
-              </div>
-
-              <div className="space-y-2.5 text-xs text-gray-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p className="font-semibold text-gray-800 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> Real-time location reports
-                </p>
-                <p className="font-semibold text-gray-800 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> Camera pothole upload logs
-                </p>
-                <p className="font-semibold text-gray-800 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" /> Direct status notifications
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setShowDirectInstallModal(false)}
-                  disabled={isInstalling}
-                  className="py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmDirectInstall}
-                  disabled={isInstalling}
-                  className="py-2.5 bg-[#FF6B00] hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-orange-500/15 cursor-pointer"
-                >
-                  {isInstalling ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" /> Adding...
-                    </>
-                  ) : (
-                    "Install App"
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      
-      {/* EXPLANATORY ALERT BANNER FOR PARSE ERROR */}
-      <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-5 md:p-6 text-amber-900 space-y-3.5 shadow-sm">
-        <div className="flex items-center gap-2 text-amber-700">
-          <Info className="w-5 h-5 shrink-0" />
-          <h3 className="font-sans font-black text-sm uppercase tracking-wide">
-            Solving Mobile "Problem Parsing the Package" & "App Not Installed" Errors
-          </h3>
-        </div>
-        <div className="text-xs space-y-2 text-amber-800 leading-relaxed">
-          <p>
-            <strong>Why did you get a parsing error?</strong> Real Android APK installers are binary codebases that require compiling via an Android Gradle Compiler & JVM (Java Virtual Machine). Because this sandbox is a web browser workspace environment, any downloadable <code>.apk</code> generated on-the-fly is a <strong>simulated demonstration text package</strong>. When Android tries to parse a text descriptor as binary, it throws the <em>"Problem parsing the package"</em> error.
-          </p>
-          <div className="bg-white/70 rounded-2xl p-3.5 border border-amber-200/50 space-y-1.5">
-            <p className="font-bold text-amber-900 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#FF6B00]" /> Use the Progressive Web App (PWA) Solution Instead (100% Working!)
-            </p>
-            <p>
-              To run OneBharat as a native app on your phone right now with <strong>full offline geolocation, local storage synchronization, and premium camera logging</strong>, install the genuine PWA. It is 100% lightweight, secure, and has its own desktop/mobile launcher icon! Follow the simple guides below.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* CUSTOM 'INSTALL APP' DYNAMIC BANNER */}
       <div id="custom-pwa-install-banner" className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-3xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden transition-all duration-300">
         <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF6B00]/5 rounded-full blur-2xl pointer-events-none" />
@@ -561,34 +487,21 @@ export const MobileAppPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
           <div className="col-span-1 flex justify-center">
-            {/* Simulated QR Code built using absolute CSS box elements for premium custom look */}
+            {/* Real QR Code dynamically generated to point to the actual application URL */}
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl relative shadow-sm flex flex-col items-center justify-center space-y-2">
               <div className="w-28 h-28 bg-white border border-slate-300 p-2 rounded-xl relative flex items-center justify-center">
-                {/* SVG mock QR pattern */}
-                <svg className="w-full h-full text-slate-800" viewBox="0 0 100 100" fill="currentColor">
-                  {/* Top-left corner finder */}
-                  <path d="M0,0 h30 v10 h-20 v20 h-10 z" />
-                  <path d="M10,10 h10 v10 h-10 z" />
-                  {/* Top-right corner finder */}
-                  <path d="M70,0 h30 v30 h-10 v-20 h-20 z" />
-                  <path d="M80,10 h10 v10 h-10 z" />
-                  {/* Bottom-left corner finder */}
-                  <path d="M0,70 h10 v20 h20 v10 h-30 z" />
-                  <path d="M10,80 h10 v10 h-10 z" />
-                  {/* Random QR block noise */}
-                  <rect x="40" y="10" width="10" height="15" />
-                  <rect x="55" y="5" width="10" height="10" />
-                  <rect x="35" y="35" width="20" height="20" />
-                  <rect x="15" y="45" width="10" height="15" />
-                  <rect x="45" y="70" width="15" height="15" />
-                  <rect x="75" y="45" width="15" height="10" />
-                  <rect x="70" y="70" width="20" height="20" />
-                </svg>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-lg shadow-md border border-slate-100 flex items-center justify-center">
-                  <span className="text-[10px] text-[#FF6B00] font-bold">OB</span>
+                <QRCodeSVG 
+                  value={appUrl} 
+                  size={100}
+                  level="H"
+                  includeMargin={false}
+                  className="w-full h-full text-slate-900"
+                />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-lg shadow-md border border-slate-100 flex items-center justify-center overflow-hidden">
+                  <OneBharatLogo className="w-6 h-6" />
                 </div>
               </div>
-              <span className="text-[9px] font-mono font-bold text-gray-500 uppercase tracking-widest">OB-SCAN-GATE</span>
+              <span className="text-[9px] font-mono font-bold text-[#FF6B00] uppercase tracking-wider text-center">Scan to Open Link</span>
             </div>
           </div>
 

@@ -517,14 +517,14 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                 key={comp.id}
                 layoutId={`card-${comp.id}`}
                 onClick={() => onSelectComplaint(comp.id)}
-                className="complaint-card-animate bg-white hover:bg-slate-50/50 border border-gray-200 hover:border-gray-300 rounded-2xl p-4 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden"
+                className="complaint-card-animate bg-white hover:bg-slate-50/50 border border-gray-200 hover:border-gray-300 rounded-2xl p-4 shadow-sm hover:shadow transition-all cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden w-full min-w-0 break-words"
               >
                 {/* Visual Glow Indicator for Emergency */}
                 {comp.priority === ComplaintPriority.EMERGENCY && (
                   <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
                 )}
 
-                <div>
+                <div className="min-w-0 w-full overflow-hidden break-words">
                   {/* Category, Date & Priority */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-mono tracking-wider text-gray-400">{comp.id}</span>
@@ -534,10 +534,10 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="font-sans font-bold text-gray-800 text-sm group-hover:text-[#FF6B00] transition-colors line-clamp-1">
+                  <h3 className="font-sans font-bold text-gray-800 text-sm group-hover:text-[#FF6B00] transition-colors break-words line-clamp-2">
                     {comp.title}
                   </h3>
-                  <p className="text-xs text-gray-500 leading-normal line-clamp-2 mt-1">
+                  <p className="text-xs text-gray-500 leading-normal line-clamp-2 mt-1 break-words">
                     {comp.description}
                   </p>
                 </div>

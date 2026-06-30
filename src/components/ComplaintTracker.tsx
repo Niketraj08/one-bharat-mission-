@@ -340,15 +340,15 @@ export const ComplaintTracker: React.FC<ComplaintTrackerProps> = ({ complaintId,
     <div id="complaint-tracker" className="max-w-3xl mx-auto space-y-6">
       
       {/* HEADER BANNER */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white p-4 border border-gray-200 rounded-3xl shadow-sm">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center bg-white p-4 border border-gray-200 rounded-3xl shadow-sm w-full min-w-0 overflow-hidden">
+        <div className="flex items-center gap-3 w-full sm:w-auto min-w-0 flex-1">
           <button
             onClick={onBack}
-            className="p-2 bg-slate-50 hover:bg-slate-100 text-gray-600 rounded-full transition-all border border-gray-150"
+            className="p-2 bg-slate-50 hover:bg-slate-100 text-gray-600 rounded-full transition-all border border-gray-150 shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono text-gray-400">{comp.id}</span>
               <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase ${
@@ -359,7 +359,7 @@ export const ComplaintTracker: React.FC<ComplaintTrackerProps> = ({ complaintId,
                 {comp.priority} Priority
               </span>
             </div>
-            <h3 className="font-sans font-bold text-gray-800 text-base leading-tight mt-1 truncate max-w-sm sm:max-w-md">
+            <h3 className="font-sans font-bold text-gray-800 text-base leading-tight mt-1 break-words line-clamp-2 max-w-full">
               {comp.title}
             </h3>
           </div>

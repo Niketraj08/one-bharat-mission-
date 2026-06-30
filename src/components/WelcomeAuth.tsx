@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { UserRole } from "../types";
+import { OneBharatLogo } from "./OneBharatLogo";
 import { 
   Shield, 
   Fingerprint, 
@@ -123,7 +124,7 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
           {/* Header */}
           <div className="z-10 flex items-center gap-2.5">
             <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg border border-slate-800">
-              <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="w-full h-full object-cover rounded-lg" />
+              <OneBharatLogo className="w-full h-full" />
             </div>
             <div>
               <h2 className="text-sm font-extrabold tracking-wider text-white flex items-center gap-1 uppercase">

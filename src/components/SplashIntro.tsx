@@ -6,6 +6,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ShieldCheck, MapPin, Sparkles, Globe } from "lucide-react";
+import { OneBharatLogo } from "./OneBharatLogo";
 
 interface SplashIntroProps {
   onComplete: () => void;
@@ -198,8 +199,8 @@ export const SplashIntro: React.FC<SplashIntroProps> = ({ onComplete }) => {
             <div className="splash-circle splash-circle-inner absolute inset-1 border-2 border-white/20 border-dashed rounded-full flex items-center justify-center bg-slate-950/40 overflow-hidden">
               
               {/* Custom Image Logo */}
-              <div className="splash-pin absolute transform flex items-center justify-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] w-16 h-16 rounded-2xl overflow-hidden border border-white/10">
-                <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="w-full h-full object-cover animate-pulse" />
+              <div className="splash-pin absolute transform flex items-center justify-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] w-16 h-16 rounded-2xl overflow-hidden border border-white/10 bg-[#0F172A]">
+                <OneBharatLogo className="w-full h-full animate-pulse" />
               </div>
 
             </div>

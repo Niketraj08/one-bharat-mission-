@@ -15,6 +15,8 @@ import { AdminPortal } from "./components/AdminPortal";
 import { InteractiveMap } from "./components/InteractiveMap";
 import { SplashIntro } from "./components/SplashIntro";
 import { WelcomeAuth } from "./components/WelcomeAuth";
+import { OneBharatLogo } from "./components/OneBharatLogo";
+import { AboutPage } from "./components/AboutPage";
 import { 
   MapPin, 
   Bell, 
@@ -37,7 +39,10 @@ import {
   EyeOff,
   Shield,
   Lock,
-  Building2
+  Building2,
+  Info,
+  Github,
+  Heart
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -63,12 +68,13 @@ function AppContent() {
   const [showApiKey, setShowApiKey] = useState(false);
 
   // Navigation / Workspace tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "lodge" | "map" | "track" | "officer" | "admin">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "lodge" | "map" | "track" | "officer" | "admin" | "about">("dashboard");
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Synchronize active tab with selected user role
   React.useEffect(() => {
+    if (activeTab === "about") return;
     if (role === UserRole.CITIZEN) {
       setActiveTab("dashboard");
     } else if (role === UserRole.OFFICER) {
@@ -132,23 +138,26 @@ function AppContent() {
 
   // Nav items based on role
   const getNavItems = () => {
+    const items = [];
     if (role === UserRole.CITIZEN) {
-      return [
+      items.push(
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
         { id: "lodge", label: "File Complaint", icon: PlusCircle },
         { id: "map", label: "Interactive Map", icon: Map }
-      ];
+      );
     } else if (role === UserRole.OFFICER) {
-      return [
+      items.push(
         { id: "officer", label: "My Assignments", icon: UserSquare },
         { id: "map", label: "Interactive Map", icon: Map }
-      ];
+      );
     } else {
-      return [
+      items.push(
         { id: "admin", label: "Nodal Analytics", icon: LayoutDashboard },
         { id: "map", label: "Interactive Map", icon: Map }
-      ];
+      );
     }
+    items.push({ id: "about", label: "About", icon: Info });
+    return items;
   };
 
   // Handle direct complaint tracking route
@@ -186,8 +195,8 @@ function AppContent() {
                 setSelectedComplaintId(null);
               }}
             >
-              <div className="app-logo-box w-9 h-9 bg-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden border border-slate-700">
-                <img src="/src/assets/images/onebharat_logo_1782755871364.jpg" alt="OneBharat Logo" className="app-logo-img w-full h-full object-cover animate-pulse" />
+              <div className="app-logo-box w-9 h-9 flex items-center justify-center shadow-lg overflow-hidden rounded-xl">
+                <OneBharatLogo className="app-logo-img w-full h-full" />
               </div>
               <div className="hidden sm:block text-left">
                 <h1 className="app-title-text font-black text-sm uppercase tracking-tight leading-none text-white">OneBharat</h1>
@@ -391,9 +400,44 @@ function AppContent() {
                 }}
               />
             )}
+
+            {activeTab === "about" && (
+              <AboutPage />
+            )}
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* FOOTER WITH MINIMAL CREATOR BRANDING */}
+      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 px-4 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span>Crafted with ❤️ by</span>
+            <a 
+              href="https://github.com/Niketraj08" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-black text-[#FF6B00] hover:underline"
+            >
+              Niket Raj
+            </a>
+          </div>
+          <p className="text-slate-500 text-[11px] text-center md:text-left font-sans tracking-wide">
+            Designed, Engineered & Crafted by <strong className="text-slate-300 font-bold">Niket Raj</strong>
+          </p>
+          <div className="flex items-center gap-2">
+            <a 
+              href="https://github.com/Niketraj08" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl border border-slate-700 transition-colors cursor-pointer"
+            >
+              <Github className="w-3.5 h-3.5 text-[#FF6B00]" />
+              <span className="font-mono text-[10px]">@Niketraj08</span>
+            </a>
+          </div>
+        </div>
+      </footer>
 
 
 

@@ -68,7 +68,7 @@ export interface TimelineEvent {
 
 export interface Complaint {
   id: string;
-  category: ComplaintCategory;
+  category: ComplaintCategory | string;
   title: string;
   description: string;
   voiceDescription?: string; // Base64 or mock voice indicator

@@ -28,7 +28,12 @@ import {
   Users,
   Compass,
   Twitter,
-  RefreshCw
+  RefreshCw,
+  Wrench,
+  Truck,
+  FileText,
+  Activity,
+  ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -55,6 +60,15 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
   const [feedbackCompId, setFeedbackCompId] = useState<string | null>(null);
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackComment, setFeedbackComment] = useState("");
+
+  const myComplaints = complaints.filter(c => c.userId === citizenProfile.id || c.userId === "user-101");
+  const [trackingCompId, setTrackingCompId] = useState<string>("");
+
+  useEffect(() => {
+    if (myComplaints.length > 0 && !trackingCompId) {
+      setTrackingCompId(myComplaints[0].id);
+    }
+  }, [myComplaints, trackingCompId]);
 
   const triggerRefresh = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -234,6 +248,170 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
             </p>
           </div>
         </div>
+      </div>
+
+      {/* COMPLAINT PROCESS TRACKER WIDGET (KAHA KAT PROCESS HUA) */}
+      <div className="bg-slate-900 border border-slate-800 text-white rounded-2xl p-5 shadow-lg space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
+          <div className="space-y-0.5">
+            <h4 className="font-sans font-black text-xs text-[#FF6B00] uppercase tracking-wider flex items-center gap-1.5">
+              <Activity className="w-4 h-4 text-orange-500 animate-pulse" />
+              Real-time Complaint Tracker & Progress Check
+            </h4>
+            <p className="text-[11px] text-gray-400">
+              Check where your filed tickets have reached in the municipal dispatch hierarchy.
+            </p>
+          </div>
+
+          {myComplaints.length > 0 ? (
+            <select
+              value={trackingCompId}
+              onChange={(e) => setTrackingCompId(e.target.value)}
+              className="bg-slate-800 border border-slate-700 text-white text-xs px-3 py-1.5 rounded-xl font-medium focus:border-[#FF6B00] outline-none cursor-pointer max-w-xs"
+            >
+              {myComplaints.map(c => (
+                <option key={c.id} value={c.id} className="bg-slate-900 text-white">
+                  [{c.id}] {c.title.slice(0, 30)}...
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-[10px] bg-slate-800 text-gray-400 px-2 py-1 rounded font-mono">No complaints filed yet</span>
+          )}
+        </div>
+
+        {(() => {
+          const selectedTrackingComp = complaints.find(c => c.id === trackingCompId);
+          if (selectedTrackingComp) {
+            return (
+              <div className="space-y-4 animate-fade-in">
+                {/* 4-Step Visual Progress Bar */}
+                <div className="relative pt-2 pb-1">
+                  {/* Connecting Background Line */}
+                  <div className="absolute top-[22px] left-[10%] right-[10%] h-1 bg-slate-800 rounded-full z-0" />
+                  
+                  {/* Connecting Active Fill Line based on status */}
+                  <div 
+                    className="absolute top-[22px] left-[10%] h-1 bg-gradient-to-r from-orange-500 to-green-500 rounded-full z-0 transition-all duration-1000" 
+                    style={{ 
+                      width: 
+                        selectedTrackingComp.status === ComplaintStatus.SUBMITTED ? "0%" :
+                        selectedTrackingComp.status === ComplaintStatus.DISPATCHED ? "26%" :
+                        selectedTrackingComp.status === ComplaintStatus.IN_PROGRESS ? "56%" :
+                        "80%" // Resolved/Closed
+                    }}
+                  />
+
+                  {/* Progress Nodes */}
+                  <div className="grid grid-cols-4 relative z-10">
+                    {/* Node 1: Submitted */}
+                    <div className="flex flex-col items-center text-center">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                        selectedTrackingComp.status === ComplaintStatus.SUBMITTED 
+                          ? "bg-[#FF6B00] text-white ring-4 ring-orange-500/20 animate-pulse" 
+                          : "bg-orange-500 text-white"
+                      }`}>
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <span className="text-[10px] font-bold mt-1.5 block">Submitted</span>
+                      <span className="text-[8px] text-gray-400 block font-mono">Ticket Created</span>
+                    </div>
+
+                    {/* Node 2: Dispatched */}
+                    {(() => {
+                      const isActive = selectedTrackingComp.status === ComplaintStatus.DISPATCHED;
+                      const isPassed = [ComplaintStatus.DISPATCHED, ComplaintStatus.IN_PROGRESS, ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED].includes(selectedTrackingComp.status);
+                      return (
+                        <div className="flex flex-col items-center text-center">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                            isActive 
+                              ? "bg-blue-500 text-white ring-4 ring-blue-500/20 animate-pulse" 
+                              : isPassed 
+                              ? "bg-blue-600 text-white" 
+                              : "bg-slate-800 text-slate-500"
+                          }`}>
+                            <Truck className="w-4 h-4" />
+                          </div>
+                          <span className={`text-[10px] font-bold mt-1.5 block ${isPassed ? "text-blue-400" : "text-gray-500"}`}>Dispatched</span>
+                          <span className="text-[8px] text-gray-400 block font-mono">Ward Assigned</span>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Node 3: In Progress */}
+                    {(() => {
+                      const isActive = selectedTrackingComp.status === ComplaintStatus.IN_PROGRESS;
+                      const isPassed = [ComplaintStatus.IN_PROGRESS, ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED].includes(selectedTrackingComp.status);
+                      return (
+                        <div className="flex flex-col items-center text-center">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                            isActive 
+                              ? "bg-amber-500 text-white ring-4 ring-amber-500/20 animate-pulse" 
+                              : isPassed 
+                              ? "bg-amber-600 text-white" 
+                              : "bg-slate-800 text-slate-500"
+                          }`}>
+                            <Wrench className="w-4 h-4" />
+                          </div>
+                          <span className={`text-[10px] font-bold mt-1.5 block ${isPassed ? "text-amber-400" : "text-gray-500"}`}>In Progress</span>
+                          <span className="text-[8px] text-gray-400 block font-mono">Repair Underway</span>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Node 4: Resolved */}
+                    {(() => {
+                      const isPassed = [ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED].includes(selectedTrackingComp.status);
+                      return (
+                        <div className="flex flex-col items-center text-center">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                            isPassed 
+                              ? "bg-green-500 text-white ring-4 ring-green-500/20 animate-pulse" 
+                              : "bg-slate-800 text-slate-500"
+                          }`}>
+                            <CheckCircle className="w-4 h-4" />
+                          </div>
+                          <span className={`text-[10px] font-bold mt-1.5 block ${isPassed ? "text-green-400" : "text-gray-500"}`}>Resolved</span>
+                          <span className="text-[8px] text-gray-400 block font-mono">Verified & Closed</span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Current Action details summary */}
+                <div className="bg-slate-950 border border-slate-850 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-mono uppercase bg-slate-800 text-[#FF6B00] px-2 py-0.5 rounded font-bold">
+                        Latest Activity Logs
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        {new Date(selectedTrackingComp.updatedAt || selectedTrackingComp.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-gray-300 leading-relaxed italic">
+                      "{selectedTrackingComp.timeline[selectedTrackingComp.timeline.length - 1]?.notes || "Complaint registered. AI dispatch engine routing ticket."}"
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => onSelectComplaint(selectedTrackingComp.id)}
+                    className="w-full sm:w-auto px-4 py-1.5 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold rounded-xl text-[11px] flex items-center justify-center gap-1 shadow-md shadow-orange-500/10 transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    Open Audit Timeline <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            return (
+              <div className="text-center py-6 bg-slate-950/40 rounded-xl border border-slate-800/50">
+                <p className="text-xs text-gray-400 italic">No complaints selected. Choose a complaint from the dropdown above to view real-time process tracker.</p>
+              </div>
+            );
+          }
+        })()}
       </div>
 
       {/* SEARCH AND TAB NAV PANEL */}

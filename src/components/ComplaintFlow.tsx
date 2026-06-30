@@ -37,6 +37,7 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
 
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState<ComplaintCategory | null>(null);
+  const [customCategory, setCustomCategory] = useState("");
   const [address, setAddress] = useState("");
   const [landmark, setLandmark] = useState("");
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -232,10 +233,14 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
     });
 
     setTimeout(() => {
+      const finalCategory = category === ComplaintCategory.OTHERS && customCategory.trim() 
+        ? customCategory.trim() 
+        : (category || "Other Civic Issue");
+
       // Execute Context creation
       const created = addComplaint({
-        category,
-        title: `${category} reported at ${address.split(",")[0] || "Near Landmark"}`,
+        category: finalCategory,
+        title: `${finalCategory} reported at ${address.split(",")[0] || "Near Landmark"}`,
         description,
         priority,
         status: ComplaintStatus.SUBMITTED,
@@ -252,11 +257,13 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
         userName: citizenProfile.name,
         userAvatar: citizenProfile.avatar,
         isAnonymous,
-        department: category === ComplaintCategory.GARBAGE || category === ComplaintCategory.ILLEGAL_DUMPING 
+        department: finalCategory === ComplaintCategory.GARBAGE || finalCategory === ComplaintCategory.ILLEGAL_DUMPING 
           ? "Saran Swachh Bharat Cleanliness Division" 
-          : category === ComplaintCategory.STREET_LIGHT || category === ComplaintCategory.ELECTRICITY 
+          : finalCategory === ComplaintCategory.STREET_LIGHT || finalCategory === ComplaintCategory.ELECTRICITY 
           ? "Saran Electricity & Streetlights Board" 
-          : "Saran Road Construction Department (RCD)"
+          : finalCategory === ComplaintCategory.ROAD_DAMAGE || finalCategory === ComplaintCategory.BROKEN_FOOTPATH
+          ? "Saran Road Construction Department (RCD)"
+          : "Saran Ward Municipal Administration"
       });
 
       setAiAnalyzing(false);
@@ -372,6 +379,25 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
               })}
             </div>
 
+            {category === ComplaintCategory.OTHERS && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="bg-orange-50/50 p-4 border border-orange-100 rounded-2xl space-y-2 mt-3"
+              >
+                <label className="text-xs font-bold text-gray-700 block">Describe your custom problem category</label>
+                <input
+                  type="text"
+                  placeholder="E.g., Stray Cattle Nuisance, Broken Water Pipe, Park Cleaning..."
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className="w-full bg-white border border-gray-200 focus:border-[#FF6B00] rounded-xl text-xs p-3 outline-none text-gray-800"
+                  required
+                />
+                <p className="text-[10px] text-gray-400">Our routing engine will dynamically assign this problem to the Saran Ward Nodal Desk.</p>
+              </motion.div>
+            )}
+
             <div className="flex justify-between items-center pt-4 border-t border-gray-100">
               <button
                 onClick={onCancel}
@@ -380,7 +406,7 @@ export const ComplaintFlow: React.FC<ComplaintFlowProps> = ({ onSuccess, onCance
                 Cancel
               </button>
               <button
-                disabled={!category}
+                disabled={!category || (category === ComplaintCategory.OTHERS && !customCategory.trim())}
                 onClick={() => setStep(2)}
                 className="px-4 py-2 bg-[#FF6B00] hover:bg-orange-600 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow"
               >

@@ -707,11 +707,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
                       <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="py-3 pl-2 font-mono font-bold text-[#FF6B00]">{c.id}</td>
                         <td className="py-3">
-                          <div className="font-semibold text-gray-900">{c.category}</div>
-                          <div className="text-gray-400 text-[10px] truncate max-w-[180px]">{c.title}</div>
+                          <div className="font-semibold text-gray-900 leading-tight">{c.category}</div>
+                          <div className="text-gray-400 text-[10px] truncate max-w-[140px] sm:max-w-[180px] md:max-w-[260px] block" title={c.title}>{c.title}</div>
                         </td>
                         <td className="py-3">
-                          <div className="text-xs text-gray-700 truncate max-w-[150px]" title={c.department}>{c.department}</div>
+                          <div className="text-xs text-gray-700 truncate max-w-[100px] sm:max-w-[140px] md:max-w-[180px] block" title={c.department}>{c.department}</div>
                         </td>
                         <td className="py-3 font-mono text-[10px] text-gray-500">{c.location?.ward || "Ward No. 4"}</td>
                         <td className="py-3 text-center">
@@ -767,15 +767,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onSelectComplaint }) =
 
                 return (
                   <div key={c.id} className="p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl space-y-2.5">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center flex-wrap gap-2">
                       <span className="font-mono font-bold text-[#FF6B00] text-xs">{c.id}</span>
-                      <span className="text-[10px] text-gray-500 font-mono">{c.location?.ward || "Ward No. 4"}</span>
+                      <span className="text-[10px] text-gray-500 font-mono truncate max-w-[150px]" title={c.location?.ward}>{c.location?.ward || "Ward No. 4"}</span>
                     </div>
 
                     <div className="space-y-1">
                       <div className="font-bold text-gray-800 text-xs">{c.category}</div>
-                      <div className="text-[10px] font-mono text-[#FF6B00] leading-none">{c.department}</div>
-                      <p className="text-[11px] text-gray-500 line-clamp-2 mt-1">{c.title}</p>
+                      <div className="text-[10px] font-mono text-[#FF6B00] leading-none break-words">{c.department}</div>
+                      <p className="text-[11px] text-gray-500 line-clamp-2 break-words mt-1">{c.title}</p>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 items-center justify-between pt-1 border-t border-slate-200/50">

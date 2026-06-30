@@ -1,0 +1,17 @@
+{
+  "short_name": "OneBharat",
+  "name": "OneBharat Civic Core",
+  "description": "Bihar Civic Grievance Management System",
+  "icons": [
+    {
+      "src": "/src/assets/images/onebharat_logo_1782755871364.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F8FAFC",
+  "theme_color": "#FF6B00",
+  "display": "standalone",
+  "orientation": "portrait"
+}

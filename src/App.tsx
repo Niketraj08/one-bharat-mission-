@@ -18,6 +18,7 @@ import { WelcomeAuth } from "./components/WelcomeAuth";
 import { OneBharatLogo } from "./components/OneBharatLogo";
 import { AboutPage } from "./components/AboutPage";
 import { BiharDirectory } from "./components/BiharDirectory";
+import { MobileAppPage } from "./components/MobileAppPage";
 import { 
   MapPin, 
   Bell, 
@@ -44,7 +45,8 @@ import {
   Info,
   Github,
   Heart,
-  BookOpen
+  BookOpen,
+  Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -126,13 +128,13 @@ function AppContent() {
   const [showApiKey, setShowApiKey] = useState(false);
 
   // Navigation / Workspace tab state
-  const [activeTab, setActiveTab] = useState<"dashboard" | "lodge" | "map" | "track" | "officer" | "admin" | "about" | "directory">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "lodge" | "map" | "track" | "officer" | "admin" | "about" | "directory" | "mobile-app">("dashboard");
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Synchronize active tab with selected user role
   React.useEffect(() => {
-    if (activeTab === "about" || activeTab === "directory") return;
+    if (activeTab === "about" || activeTab === "directory" || activeTab === "mobile-app") return;
     if (role === UserRole.CITIZEN) {
       setActiveTab("dashboard");
     } else if (role === UserRole.OFFICER) {
@@ -214,6 +216,7 @@ function AppContent() {
         { id: "map", label: "Interactive Map", icon: Map }
       );
     }
+    items.push({ id: "mobile-app", label: "Get Mobile App", icon: Smartphone });
     items.push({ id: "directory", label: "Bihar Directory", icon: BookOpen });
     items.push({ id: "about", label: "About", icon: Info });
     return items;
@@ -466,6 +469,10 @@ function AppContent() {
 
             {activeTab === "directory" && (
               <BiharDirectory />
+            )}
+
+            {activeTab === "mobile-app" && (
+              <MobileAppPage />
             )}
           </motion.div>
         </AnimatePresence>

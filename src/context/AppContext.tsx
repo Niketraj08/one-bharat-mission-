@@ -57,7 +57,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem("onebharat_citizen_profile");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.name === "Arjun Mehta" || !parsed.name)) {
+          parsed.name = "Niket Raj";
+          parsed.email = "niketrajkvs@gmail.com";
+        }
+        return parsed;
       } catch (e) {
         console.error("Error parsing profile, reloading defaults", e);
       }

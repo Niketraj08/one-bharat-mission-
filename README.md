@@ -1,16 +1,20 @@
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+</div>
 
-# OneBharat
+# Run and deploy your AI Studio app
 
-OneBharat is a modern web app designed to support citizens with essential services, complaint tracking, information access, and government portal experiences in a simple and user-friendly way.
+This contains everything you need to run your app locally.
 
-## Features
-- Citizen-friendly dashboard experience
-- Complaint submission and tracking flow
-- Bihar directory and information access
-- Officer and admin portal views
-- Responsive and mobile-friendly interface
+View your app in AI Studio: https://ai.studio/apps/2f4fe403-95ce-4b74-8bf4-049d4b9eb11b
+
+## Run Locally
+
+**Prerequisites:**  Node.js
 
 
-## Credits
-- Developed by: Niket
-- Company: Astracognix Solution
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

@@ -37,9 +37,12 @@ import {
   Lock,
   Unlock,
   BookOpen,
-  Check
+  Check,
+  UserCheck,
+  Newspaper
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { LocalCivicNews } from "./LocalCivicNews";
 
 interface CitizenDashboardProps {
   onNewComplaint: () => void;
@@ -59,7 +62,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
 
   const myComplaints = complaints.filter(c => c.userId === citizenProfile.id || c.userId === "user-101");
 
-  const [activeTab, setActiveTab] = useState<"all" | "my" | "upvoted" | "emergency" | "hero">("my");
+  const [activeTab, setActiveTab] = useState<"all" | "my" | "upvoted" | "emergency" | "hero" | "news">("my");
   // Quiz states
   const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuizQ, setCurrentQuizQ] = useState(0);
@@ -67,6 +70,14 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizUnlockedBadge, setQuizUnlockedBadge] = useState(false);
+  const [quizTakerName, setQuizTakerName] = useState("");
+  const [quizNameConfirmed, setQuizNameConfirmed] = useState(false);
+
+  useEffect(() => {
+    if (citizenProfile && citizenProfile.name && !quizTakerName) {
+      setQuizTakerName(citizenProfile.name);
+    }
+  }, [citizenProfile, quizTakerName]);
 
   // Certificate Modal State
   const [selectedBadgeCert, setSelectedBadgeCert] = useState<any | null>(null);
@@ -228,6 +239,496 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
   const [feedbackComment, setFeedbackComment] = useState("");
 
   const [trackingCompId, setTrackingCompId] = useState<string>("");
+
+  const exportBadgeCertificate = (badge: any) => {
+    if (!badge) return;
+    
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Certificate of Civic Excellence - ${badge.title}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;950&family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+    }
+    .cert-card {
+      background: #FCFBF7;
+      border: 12px double #fcd34d;
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      position: relative;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .badge-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 16px auto;
+      color: white;
+      font-size: 32px;
+      border: 4px solid white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .presented-to {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .name-box {
+      border-top: 2px dashed #fef3c7;
+      border-bottom: 2px dashed #fef3c7;
+      padding: 12px 0;
+      margin: 16px auto;
+      max-width: 400px;
+    }
+    .name {
+      font-size: 26px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .id-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 2px;
+    }
+    .citation {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+      max-width: 550px;
+      margin: 16px auto;
+    }
+    .flavor {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #d97706;
+      font-style: italic;
+      margin-top: 10px;
+    }
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr 120px 1fr;
+      align-items: flex-end;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .sign-line {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: #1e293b;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+    .sign-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .qr {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #fef3c7;
+      border-radius: 4px;
+      padding: 4px;
+      background: white;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .qr-block {
+      background: #1e293b;
+      border-radius: 1px;
+    }
+    .print-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .cert-card {
+        box-shadow: none;
+        border-width: 16px;
+      }
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  <div class="cert-card">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">
+      OneBharat State Grievance Network
+    </div>
+    <div style="font-size: 11px; font-weight: bold; color: #d97706; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px;">
+      Sonepur Municipal Administration, Saran
+    </div>
+    
+    <div class="badge-icon">🎖️</div>
+    
+    <h1>Certificate of Civic Excellence</h1>
+    <div class="presented-to">This official digital token of honor is presented to</div>
+    
+    <div class="name-box">
+      <div class="name">${citizenProfile.name}</div>
+      <div class="id-tag">CITIZEN ID: ${citizenProfile.id}</div>
+    </div>
+    
+    <div class="citation">
+      "For exceptional civic duty. By completing local diagnostics and earning the <strong>${badge.title}</strong> credential, this citizen assists local Ward Officers in securing municipal safety and civic cleanliness."
+    </div>
+    
+    <div class="flavor">
+      "${badge.flavor || 'Vigilantia et Integritas'}"
+    </div>
+    
+    <div class="footer">
+      <div>
+        <div class="sign-line">Arbind Singh</div>
+        <div class="sign-title">Ward President</div>
+      </div>
+      
+      <div class="qr-container">
+        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fsonpur.site.je" alt="QR Code" style="width: 64px; height: 64px; border: 1px solid #fef3c7; border-radius: 4px; padding: 4px; background: white;" />
+        <div style="font-size: 6.5px; font-family: 'JetBrains Mono', monospace; color: #94a3b8; margin-top: 4px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">SECURE TOKEN</div>
+      </div>
+      
+      <div>
+        <div class="sign-line">Manoj Yadav</div>
+        <div class="sign-title">Nodal Ward Officer</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>
+`;
+
+    const element = document.createElement("a");
+    const file = new Blob([htmlContent], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = `Civic_Hero_${badge.title.replace(/\s+/g, '_')}_Certificate.html`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const exportQuizCertificate = (score: number, takerName: string) => {
+    const finalTakerName = takerName || quizTakerName || citizenProfile.name || "Niket Raj";
+    let rankTitle = "Bronze Rank - Civic Participant";
+    let rankDesc = "For participating in Sonepur Local Knowledge diagnostics and showing dedication to city standards.";
+    if (score === 3) {
+      rankTitle = "Platinum Rank - Supreme Civic Scholar";
+      rankDesc = "For answering 100% of local public health, river borders, and ward safety procedures correctly.";
+    } else if (score === 2) {
+      rankTitle = "Gold Rank - Distinguished Civic Advocate";
+      rankDesc = "For demonstrating advanced knowledge of Saran district municipal response SLAs and contract workflows.";
+    } else if (score === 1) {
+      rankTitle = "Silver Rank - Verified Local Watcher";
+      rankDesc = "For demonstrating standard comprehension of Sonepur community hazard reports and GPS pin systems.";
+    }
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Certificate of Civic Knowledge - ${finalTakerName}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;950&family=Playfair+Display:ital,wght@0,700;1,400&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+    }
+    .cert-card {
+      background: #FCFBF7;
+      border: 12px double #34d399;
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      position: relative;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .badge-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 16px auto;
+      color: white;
+      font-size: 32px;
+      border: 4px solid white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .presented-to {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .name-box {
+      border-top: 2px dashed #a7f3d0;
+      border-bottom: 2px dashed #a7f3d0;
+      padding: 12px 0;
+      margin: 16px auto;
+      max-width: 400px;
+    }
+    .name {
+      font-size: 26px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .id-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 2px;
+    }
+    .citation {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+      max-width: 550px;
+      margin: 16px auto;
+    }
+    .rank-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: bold;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      margin: 10px 0;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr 120px 1fr;
+      align-items: flex-end;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .sign-line {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: #1e293b;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+    .sign-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .qr {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #a7f3d0;
+      border-radius: 4px;
+      padding: 4px;
+      background: white;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .qr-block {
+      background: #065f46;
+      border-radius: 1px;
+    }
+    .print-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .cert-card {
+        box-shadow: none;
+        border-width: 16px;
+      }
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  <div class="cert-card">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">
+      OneBharat State Grievance Network
+    </div>
+    <div style="font-size: 11px; font-weight: bold; color: #10b981; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px;">
+      Sonepur Municipal Administration, Saran
+    </div>
+    
+    <div class="badge-icon">📖</div>
+    
+    <h1>Certificate of Civic Knowledge</h1>
+    <div class="presented-to">This official performance token is awarded to</div>
+    
+    <div class="name-box">
+      <div class="name">${finalTakerName}</div>
+      <div class="id-tag">CITIZEN ID: ${citizenProfile.id}</div>
+    </div>
+    
+    <div>
+      <span class="rank-badge">${rankTitle}</span>
+    </div>
+    
+    <div class="citation">
+      "${rankDesc}"
+    </div>
+    
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #059669; font-weight: bold; margin-top: 8px;">
+      Verified Quiz Score: ${score}/3 Correct
+    </div>
+    
+    <div class="footer">
+      <div>
+        <div class="sign-line">Arbind Singh</div>
+        <div class="sign-title">Ward President</div>
+      </div>
+      
+      <div class="qr-container">
+        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fsonpur.site.je" alt="QR Code" style="width: 64px; height: 64px; border: 1px solid #a7f3d0; border-radius: 4px; padding: 4px; background: white;" />
+        <div style="font-size: 6.5px; font-family: 'JetBrains Mono', monospace; color: #94a3b8; margin-top: 4px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;">SECURE TOKEN</div>
+      </div>
+      
+      <div>
+        <div class="sign-line">Manoj Yadav</div>
+        <div class="sign-title">Nodal Ward Officer</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 500);
+    };
+  </script>
+</body>
+</html>
+`;
+
+    const element = document.createElement("a");
+    const file = new Blob([htmlContent], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = `Civic_Quiz_${finalTakerName.replace(/\s+/g, '_')}_Certificate.html`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
 
   useEffect(() => {
     if (myComplaints.length > 0 && !trackingCompId) {
@@ -632,6 +1133,14 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
           >
             <Award className="w-3.5 h-3.5 animate-pulse" /> Civic Hero Center 🌟
           </button>
+          <button
+            onClick={() => setActiveTab("news")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+              activeTab === "news" ? "bg-blue-600 text-white shadow font-bold" : "text-blue-700 hover:bg-blue-50/60"
+            }`}
+          >
+            <Newspaper className="w-3.5 h-3.5" /> Local Civic News 📰
+          </button>
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -684,7 +1193,15 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
       ))}
 
       {/* LIVE COMPLAINTS FEED OR CIVIC HERO PROGRESS PANEL */}
-      {activeTab === "hero" ? (
+      {activeTab === "news" ? (
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+        >
+          <LocalCivicNews />
+        </motion.div>
+      ) : activeTab === "hero" ? (
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -761,85 +1278,242 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
             </div>
           </div>
 
-          {/* BADGES GALLERY DIRECTORY */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-sans font-bold text-gray-800 text-base">Digital 'Civic Hero' Badges</h3>
-                <p className="text-xs text-gray-500">Your official achievements based on reported issues, ratings, and participation in Sonpur.</p>
-              </div>
-              <span className="text-xs font-mono font-bold bg-orange-50 text-[#FF6B00] border border-orange-100 px-2.5 py-1 rounded-full">
-                Unlocked: {dynamicBadges.filter(b => b.isUnlocked).length} / {dynamicBadges.length}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dynamicBadges.map((badge) => {
-                return (
-                  <motion.div
-                    key={badge.id}
-                    whileHover={{ y: -3 }}
-                    onClick={() => {
-                      if (badge.isUnlocked) {
-                        setSelectedBadgeCert(badge);
-                      } else {
-                        addNotification(
-                          "Badge Locked",
-                          `To unlock this badge: ${badge.criteria}`,
-                          "warning"
-                        );
-                      }
-                    }}
-                    className={`p-4 rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between min-h-[140px] ${
-                      badge.isUnlocked 
-                        ? "bg-white border-orange-200 hover:border-orange-400 cursor-pointer shadow-sm hover:shadow" 
-                        : "bg-gray-50/70 border-gray-200 opacity-65"
-                    }`}
-                  >
+          {/* BADGES GALLERY & INTEGRATED CERTIFICATE SPLIT */}
+          {(() => {
+            const activeCert = selectedBadgeCert || dynamicBadges.find(b => b.isUnlocked) || dynamicBadges[0];
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Left side: Badges Gallery Directory (7 of 12 columns) */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="flex justify-between items-center bg-white/40 p-1 rounded-xl">
                     <div>
-                      {/* Top status */}
-                      <div className="flex justify-between items-start mb-2">
-                        <div className={`p-2 rounded-xl border ${
-                          badge.isUnlocked ? badge.color : "bg-gray-100 text-gray-400 border-gray-200"
-                        }`}>
-                          {renderBadgeIcon(badge.icon, "w-5 h-5")}
-                        </div>
-                        {badge.isUnlocked ? (
-                          <span className="text-[9px] bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                            <CheckCircle className="w-2.5 h-2.5 text-green-600" /> Unlocked
-                          </span>
-                        ) : (
-                          <span className="text-[9px] bg-gray-100 text-gray-500 font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                            <Lock className="w-2.5 h-2.5" /> Locked
-                          </span>
-                        )}
+                      <h3 className="font-sans font-extrabold text-gray-800 text-sm tracking-tight">Digital 'Civic Hero' Badges</h3>
+                      <p className="text-[10px] text-gray-500">Your accomplishments based on verified reports and participation in Sonpur.</p>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold bg-orange-50 text-[#FF6B00] border border-orange-100 px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+                      Unlocked: {dynamicBadges.filter(b => b.isUnlocked).length} / {dynamicBadges.length}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {dynamicBadges.map((badge) => {
+                      const isSelected = activeCert && activeCert.id === badge.id;
+                      return (
+                        <motion.div
+                          key={badge.id}
+                          whileHover={{ y: -2 }}
+                          onClick={() => {
+                            if (badge.isUnlocked) {
+                              setSelectedBadgeCert(badge);
+                            } else {
+                              addNotification(
+                                "Badge Locked",
+                                `To unlock this badge: ${badge.criteria}`,
+                                "warning"
+                              );
+                            }
+                          }}
+                          className={`p-3.5 rounded-xl border transition-all relative overflow-hidden flex flex-col justify-between min-h-[135px] cursor-pointer ${
+                            badge.isUnlocked 
+                              ? isSelected
+                                ? "bg-orange-50/40 border-[#FF6B00] ring-1 ring-[#FF6B00]/30 shadow"
+                                : "bg-white border-gray-200 hover:border-orange-300 shadow-sm" 
+                              : "bg-gray-50/65 border-gray-200 opacity-60"
+                          }`}
+                        >
+                          <div>
+                            {/* Top status */}
+                            <div className="flex justify-between items-start mb-1.5">
+                              <div className={`p-1.5 rounded-lg border ${
+                                badge.isUnlocked ? badge.color : "bg-gray-100 text-gray-400 border-gray-200"
+                              }`}>
+                                {renderBadgeIcon(badge.icon, "w-4 h-4")}
+                              </div>
+                              {badge.isUnlocked ? (
+                                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${
+                                  isSelected ? "bg-orange-100 text-orange-800" : "bg-green-50 text-green-700"
+                                }`}>
+                                  <CheckCircle className="w-2.5 h-2.5" /> {isSelected ? "Viewing" : "Unlocked"}
+                                </span>
+                              ) : (
+                                <span className="text-[8px] bg-gray-100 text-gray-500 font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                  <Lock className="w-2.5 h-2.5" /> Locked
+                                </span>
+                              )}
+                            </div>
+
+                            <h4 className="font-sans font-black text-gray-800 text-xs">{badge.title}</h4>
+                            <p className="text-[10px] text-gray-500 leading-normal mt-0.5 line-clamp-2">
+                              {badge.description}
+                            </p>
+                          </div>
+
+                          <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between">
+                            <span className="text-[8px] font-mono text-gray-400">
+                              {badge.isUnlocked ? `Earned: ${badge.dateEarned || "June 2026"}` : `Req: ${badge.criteria}`}
+                            </span>
+                            {badge.isUnlocked ? (
+                              <span className="text-[9px] text-[#FF6B00] font-black hover:underline flex items-center gap-0.5">
+                                Preview Cert →
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-gray-450 font-medium">
+                                Locked
+                              </span>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right side: Integrated Certificate of Excellence (5 of 12 columns) */}
+                <div className="lg:col-span-5 space-y-3.5 lg:sticky lg:top-4 bg-slate-50/50 p-4 rounded-2xl border border-gray-200">
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                    <span className="text-[10px] font-mono font-extrabold uppercase text-slate-500 tracking-wider flex items-center gap-1">
+                      <Award className="w-3.5 h-3.5 text-amber-500 animate-pulse" /> Verified Certificate Panel
+                    </span>
+                    <span className="text-[9px] bg-green-100 text-green-800 font-mono font-bold px-2 py-0.5 rounded border border-green-200 uppercase">
+                      SECURE TOKEN
+                    </span>
+                  </div>
+
+                  {activeCert ? (
+                    <motion.div
+                      key={`cert-${activeCert.id}`}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="bg-[#FCFBF7] border-4 border-double border-amber-300 rounded-2xl p-4 shadow-md relative overflow-hidden select-none"
+                    >
+                      {/* Filigree corner accents */}
+                      <div className="absolute top-1.5 left-1.5 w-4 h-4 border-t border-l border-amber-400" />
+                      <div className="absolute top-1.5 right-1.5 w-4 h-4 border-t border-r border-amber-400" />
+                      <div className="absolute bottom-1.5 left-1.5 w-4 h-4 border-b border-l border-amber-400" />
+                      <div className="absolute bottom-1.5 right-1.5 w-4 h-4 border-b border-r border-amber-400" />
+
+                      {/* Top ribbon flag */}
+                      <div className="absolute top-0 right-4 bg-gradient-to-b from-amber-500 to-yellow-600 text-[8px] font-bold text-white px-1.5 py-2 rounded-b shadow-sm uppercase tracking-widest font-mono">
+                        VERIFIED
                       </div>
 
-                      <h4 className="font-sans font-bold text-gray-800 text-xs">{badge.title}</h4>
-                      <p className="text-[10px] text-gray-500 leading-normal mt-1 line-clamp-2">
-                        {badge.description}
-                      </p>
-                    </div>
+                      <div className="text-center space-y-3 pt-2">
+                        {/* Header Credentials */}
+                        <div className="space-y-0.5">
+                          <span className="text-[7px] tracking-widest font-mono font-black text-gray-400 uppercase block leading-none">
+                            OneBharat State Grievance Network
+                          </span>
+                          <span className="text-[8px] tracking-widest font-sans font-bold text-[#FF6B00] uppercase block leading-none">
+                            Sonepur Municipal Administration, Saran
+                          </span>
+                        </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
-                      <span className="text-[9px] font-mono text-gray-400">
-                        {badge.isUnlocked ? `Earned: ${badge.dateEarned || "June 2026"}` : `Req: ${badge.criteria}`}
-                      </span>
-                      {badge.isUnlocked ? (
-                        <span className="text-[10px] text-[#FF6B00] font-bold hover:underline flex items-center gap-0.5">
-                          Certificate ↗
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-gray-450 font-medium">
-                          Locked
-                        </span>
-                      )}
+                        {/* Crest Icon inside gold border */}
+                        <div className="w-11 h-11 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 text-white rounded-full flex items-center justify-center mx-auto shadow-md border-2 border-white">
+                          {renderBadgeIcon(activeCert.icon, "w-5 h-5")}
+                        </div>
+
+                        {/* Title */}
+                        <div className="space-y-0.5">
+                          <h4 className="font-serif font-extrabold text-gray-800 text-xs tracking-wider uppercase">
+                            Certificate of Civic Excellence
+                          </h4>
+                          <p className="text-[9px] text-gray-400 italic font-serif">This official digital token is awarded to</p>
+                        </div>
+
+                        {/* Citizen Name & ID */}
+                        <div className="space-y-0.5 py-1 border-y border-dashed border-amber-200 max-w-[210px] mx-auto">
+                          <h3 className="font-sans font-black text-slate-800 text-sm tracking-tight uppercase leading-tight">
+                            {citizenProfile.name}
+                          </h3>
+                          <p className="text-[8px] font-mono text-gray-400 uppercase tracking-widest leading-none">Citizen ID: {citizenProfile.id}</p>
+                        </div>
+
+                        {/* Citation Text */}
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] text-gray-600 leading-normal font-serif max-w-xs mx-auto">
+                            "For exceptional civic duty. By completing local diagnostics and earning the <strong className="text-slate-800">{activeCert.title}</strong> credential, this citizen assists local Ward Officers in securing municipal safety."
+                          </p>
+                          <p className="text-[8px] text-[#FF6B00] font-mono italic max-w-xs mx-auto leading-relaxed">
+                            {activeCert.flavor}
+                          </p>
+                        </div>
+
+                        {/* Footer Seals & QR Code & Signatures */}
+                        <div className="grid grid-cols-3 items-end gap-1 pt-2 border-t border-gray-100">
+                          {/* Signature 1 */}
+                          <div className="text-center space-y-0.5">
+                            <span className="font-serif text-[8px] italic text-slate-800 block leading-none">Manoj Yadav</span>
+                            <span className="text-[6px] text-gray-400 uppercase block font-mono leading-none">Nodal Ward Officer</span>
+                          </div>
+
+                          {/* QR Code */}
+                          <div className="flex flex-col items-center">
+                            <div className="w-10 h-10 bg-white border border-amber-100 rounded p-0.5 flex items-center justify-center shadow-inner">
+                              <div className="grid grid-cols-4 gap-0.5 w-full h-full">
+                                {[...Array(16)].map((_, i) => (
+                                  <div 
+                                    key={i} 
+                                    className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2 || i === 0 || i === 3 || i === 12 || i === 15) ? "bg-slate-800" : "bg-transparent"}`} 
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <span className="text-[5px] text-gray-400 font-mono mt-0.5 leading-none">HASH AUTHENTICATED</span>
+                          </div>
+
+                          {/* Signature 2 */}
+                          <div className="text-center space-y-0.5">
+                            <span className="font-serif text-[8px] italic text-slate-800 block leading-none">Saran DM</span>
+                            <span className="text-[6px] text-gray-400 uppercase block font-mono leading-none">Saran District Admin</span>
+                          </div>
+                        </div>
+
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200">
+                      <Award className="w-10 h-10 text-gray-300 mx-auto mb-2 animate-bounce" />
+                      <p className="text-xs text-gray-400">Click any unlocked badge to generate credential certificate.</p>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
+                  )}
+
+                  {/* Actions Bar inside the Inline Panel */}
+                  <div className="flex gap-2 justify-center pt-1">
+                    <button
+                      onClick={() => {
+                        if (activeCert) {
+                          exportBadgeCertificate(activeCert);
+                        }
+                        addNotification(
+                          "Credential Exported",
+                          `Successfully generated and exported high-resolution cryptographic PDF for ${activeCert ? activeCert.title : "Civic Credential"}.`,
+                          "success"
+                        );
+                      }}
+                      className="flex-1 px-3 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-[10px] flex items-center justify-center gap-1 shadow transition-all cursor-pointer"
+                    >
+                      Export PDF
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (activeCert) {
+                          const text = encodeURIComponent(`📢 Proud to earn the '${activeCert.title}' digital credential on the Sonepur Citizen Portal (sonpur.site.je)! Join me in keeping Sonpur clean and hazard-free. 🇮🇳`);
+                          window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
+                          addNotification("Shared Successfully", "Opened Twitter share dialogue.", "success");
+                        }
+                      }}
+                      className="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 font-bold border border-sky-200 rounded-xl text-[10px] flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Twitter className="w-3.5 h-3.5 fill-current" /> Tweet Badge
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
 
           {/* INTERACTIVE QUIZ & SCORE BOOST CARD */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -862,38 +1536,82 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
               </div>
 
               {!quizStarted && !quizFinished ? (
-                <div className="text-center py-6 space-y-3">
-                  <Compass className="w-12 h-12 text-orange-200 mx-auto animate-spin" style={{ animationDuration: "12s" }} />
-                  <h5 className="font-sans font-bold text-gray-750 text-xs font-semibold">Ready to earn the Civic Scholar Badge?</h5>
-                  <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                    Prove your familiarity with Sonepur local development procedures, rivers boundary management, and ward coordination. You must answer 3/3 correct to pass.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setQuizStarted(true);
-                      setCurrentQuizQ(0);
-                      setSelectedQuizAns(null);
-                      setQuizScore(0);
-                    }}
-                    className="px-5 py-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow transition-all cursor-pointer"
-                  >
-                    Start Smart Civic Quiz
-                  </button>
-                </div>
+                !quizNameConfirmed ? (
+                  <div className="text-center py-6 space-y-4 max-w-md mx-auto">
+                    <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center mx-auto">
+                      <UserCheck className="w-6 h-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h5 className="font-sans font-bold text-gray-800 text-xs">Enter Your Name for the Certificate</h5>
+                      <p className="text-[11px] text-gray-500 leading-normal">
+                        Your dynamic civic knowledge certificate and verified credentials will be generated with exactly this name.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 pt-1">
+                      <input
+                        type="text"
+                        placeholder="Enter Full Name (e.g., Niket Raj)"
+                        value={quizTakerName}
+                        onChange={(e) => setQuizTakerName(e.target.value)}
+                        className="w-full px-4 py-2 bg-slate-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/40 text-center font-bold text-gray-800 text-xs"
+                      />
+                      <button
+                        onClick={() => {
+                          if (!quizTakerName.trim()) {
+                            addNotification("Name Required", "Please enter a valid name to proceed with the quiz.", "warning");
+                            return;
+                          }
+                          setQuizNameConfirmed(true);
+                        }}
+                        className="w-full py-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow transition-all cursor-pointer"
+                      >
+                        Confirm Name & Proceed
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 space-y-3">
+                    <Compass className="w-12 h-12 text-orange-200 mx-auto animate-spin" style={{ animationDuration: "12s" }} />
+                    <h5 className="font-sans font-bold text-gray-750 text-xs font-semibold">Ready to earn the Civic Scholar Badge, {quizTakerName}?</h5>
+                    <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                      Prove your familiarity with Sonepur local development procedures, rivers boundary management, and ward coordination. You must answer 3/3 correct to pass.
+                    </p>
+                    <div className="flex gap-2 justify-center pt-2">
+                      <button
+                        onClick={() => setQuizNameConfirmed(false)}
+                        className="px-4 py-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold rounded-xl text-xs transition-all cursor-pointer"
+                      >
+                        Change Name
+                      </button>
+                      <button
+                        onClick={() => {
+                          setQuizStarted(true);
+                          setCurrentQuizQ(0);
+                          setSelectedQuizAns(null);
+                          setQuizScore(0);
+                        }}
+                        className="px-5 py-1.5 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow transition-all cursor-pointer"
+                      >
+                        Start Smart Civic Quiz
+                      </button>
+                    </div>
+                  </div>
+                )
               ) : quizStarted ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-[10px] font-mono text-gray-400">
                     <span>QUESTION {currentQuizQ + 1} OF 3</span>
                     <span>SCORE: {quizScore}/3</span>
                   </div>
-
+ 
                   {/* Question header */}
                   <h5 className="font-sans font-bold text-gray-800 text-xs leading-snug">
                     {currentQuizQ === 0 && "Q1: What is the historical confluence where Sonpur is located, celebrated annually during the Sonepur Harihar Kshetra Mela?"}
                     {currentQuizQ === 1 && "Q2: How does the Sonpur Citizen Portal (sonpur.site.je) direct your complaint to local field contractors?"}
                     {currentQuizQ === 2 && "Q3: What is the target SLA response window for emergency electrical or sewage logging hazards reported on this system?"}
                   </h5>
-
+ 
                   {/* Options */}
                   <div className="space-y-2">
                     {(currentQuizQ === 0 
@@ -919,7 +1637,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                       );
                     })}
                   </div>
-
+ 
                   {/* Quiz action button */}
                   <div className="flex justify-end pt-2">
                     <button
@@ -929,7 +1647,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                         const isCorrect = selectedQuizAns === 1;
                         const nextScore = isCorrect ? quizScore + 1 : quizScore;
                         setQuizScore(nextScore);
-
+ 
                         if (currentQuizQ < 2) {
                           setCurrentQuizQ(currentQuizQ + 1);
                           setSelectedQuizAns(null);
@@ -952,8 +1670,8 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                           } else {
                             addNotification(
                               "Quiz Completed",
-                              `You scored ${nextScore}/3. Answer 3/3 correct to unlock the badge.`,
-                              "warning"
+                              `You scored ${nextScore}/3. Your dynamic performance certificate is ready!`,
+                              "success"
                             );
                           }
                         }
@@ -965,91 +1683,244 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-6 space-y-4">
-                  {quizScore === 3 ? (
-                    <div className="space-y-2">
-                      <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                        <CheckCircle className="w-6 h-6 text-green-600" />
-                      </div>
-                      <h5 className="font-sans font-bold text-green-800 text-xs">Congratulations! Perfect Score 3/3</h5>
-                      <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                        Excellent civic prowess. You have unlocked the **Civic Scholar Badge** and earned **+25 Civic Reputation points**! Your reports now bypass standard queue filters.
-                      </p>
+                <div className="space-y-4">
+                  {/* PERFORMANCE-WISE INLINE COMPACT CERTIFICATE (NO DISMISS BUTTON) */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-[#FCFBF7] border-4 border-double border-amber-300 rounded-2xl p-4 text-center relative overflow-hidden shadow-md"
+                  >
+                    {/* Filigree corner accents */}
+                    <div className="absolute top-1 left-1 w-3 h-3 border-t border-l border-amber-400" />
+                    <div className="absolute top-1 right-1 w-3 h-3 border-t border-r border-amber-400" />
+                    <div className="absolute bottom-1 left-1 w-3 h-3 border-b border-l border-amber-400" />
+                    <div className="absolute bottom-1 right-1 w-3 h-3 border-b border-r border-amber-400" />
+
+                    {/* Ribbon */}
+                    <div className="absolute top-0 right-4 bg-gradient-to-b from-amber-500 to-yellow-600 text-[7px] font-bold text-white px-1.5 py-1.5 rounded-b uppercase tracking-widest font-mono">
+                      QUIZ CERTIFICATE
                     </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-                        <X className="w-6 h-6" />
+
+                    <div className="space-y-2.5">
+                      <div className="space-y-0.5">
+                        <span className="text-[7px] tracking-widest font-mono font-black text-gray-400 uppercase block">
+                          OneBharat State Grievance Network
+                        </span>
+                        <span className="text-[8px] tracking-widest font-sans font-bold text-[#FF6B00] uppercase block">
+                          Sonepur Municipal Administration, Saran
+                        </span>
                       </div>
-                      <h5 className="font-sans font-bold text-red-800 text-xs">Score: {quizScore}/3</h5>
-                      <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                        To unlock the prestigious Civic Scholar digital credential, you must score a perfect 3/3. Give it another shot!
-                      </p>
+
+                      <h5 className="font-serif font-extrabold text-gray-800 text-xs tracking-wider uppercase">
+                        Certificate of Civic Knowledge
+                      </h5>
+                      
+                      <p className="text-[9px] text-gray-400 italic font-serif">Presented to</p>
+
+                      <div className="space-y-0.5 py-1 border-y border-dashed border-amber-200 max-w-[180px] mx-auto">
+                        <h3 className="font-sans font-black text-slate-850 text-xs uppercase tracking-tight">
+                          {quizTakerName || citizenProfile.name}
+                        </h3>
+                        <p className="text-[6px] font-mono text-gray-400 uppercase tracking-widest">Citizen ID: {citizenProfile.id}</p>
+                      </div>
+
+                      {/* Performance classification */}
+                      {(() => {
+                        let rankTitle = "Bronze Rank - Civic Participant";
+                        let rankDesc = "For participating in Sonepur Local Knowledge diagnostics and showing dedication to city standards.";
+                        let ribbonColor = "text-amber-600 bg-amber-50 border-amber-100";
+                        
+                        if (quizScore === 3) {
+                          rankTitle = "Platinum Rank - Supreme Civic Scholar";
+                          rankDesc = "For answering 100% of local public health, river borders, and ward safety procedures correctly.";
+                          ribbonColor = "text-purple-600 bg-purple-50 border-purple-100";
+                        } else if (quizScore === 2) {
+                          rankTitle = "Gold Rank - Distinguished Civic Advocate";
+                          rankDesc = "For demonstrating advanced knowledge of Saran district municipal response SLAs and contract workflows.";
+                          ribbonColor = "text-amber-700 bg-amber-50 border-amber-100";
+                        } else if (quizScore === 1) {
+                          rankTitle = "Silver Rank - Verified Local Watcher";
+                          rankDesc = "For demonstrating standard comprehension of Sonepur community hazard reports and GPS pin systems.";
+                        }
+
+                        return (
+                          <div className="space-y-1.5">
+                            <div className={`inline-block text-[8px] font-bold px-2 py-0.5 rounded-full border ${ribbonColor}`}>
+                              Performance Score: {quizScore}/3 ({((quizScore/3)*100).toFixed(0)}% Accuracy)
+                            </div>
+                            <h4 className="font-sans font-black text-slate-800 text-[10px] uppercase tracking-wide">
+                              {rankTitle}
+                            </h4>
+                            <p className="text-[9px] text-gray-600 italic font-serif leading-relaxed max-w-sm mx-auto px-4">
+                              "{rankDesc}"
+                            </p>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Footer signatures & QR Code */}
+                      <div className="grid grid-cols-3 items-end gap-1 pt-2 border-t border-gray-100 max-w-xs mx-auto">
+                        {/* Sign 1 */}
+                        <div className="text-center space-y-0.5">
+                          <span className="font-serif text-[7px] italic text-slate-800 block leading-none">Arbind Singh</span>
+                          <span className="text-[5px] text-gray-400 uppercase font-mono block leading-none">Ward President</span>
+                        </div>
+
+                        {/* Custom QR Code */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 bg-white border border-amber-100 rounded p-0.5 flex items-center justify-center">
+                            <div className="grid grid-cols-4 gap-0.5 w-full h-full">
+                              {[...Array(16)].map((_, i) => (
+                                <div 
+                                  key={i} 
+                                  className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2 || i === 0 || i === 3 || i === 12 || i === 15) ? "bg-slate-800" : "bg-transparent"}`} 
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <span className="text-[4px] text-gray-400 font-mono mt-0.5 leading-none">SECURE QR CODE</span>
+                        </div>
+
+                        {/* Sign 2 */}
+                        <div className="text-center space-y-0.5">
+                          <span className="font-serif text-[7px] italic text-slate-800 block leading-none">Manoj Yadav</span>
+                          <span className="text-[5px] text-gray-400 uppercase font-mono block leading-none">Nodal Ward Officer</span>
+                        </div>
+                      </div>
+
                     </div>
-                  )}
+                  </motion.div>
 
                   <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => {
                         setQuizFinished(false);
-                        setQuizStarted(true);
+                        setQuizStarted(false);
+                        setQuizNameConfirmed(false);
                         setCurrentQuizQ(0);
                         setSelectedQuizAns(null);
                         setQuizScore(0);
                       }}
-                      className="px-4 py-2 border border-[#FF6B00] text-[#FF6B00] hover:bg-orange-50 font-bold rounded-xl text-xs transition-all cursor-pointer"
+                      className="px-4 py-1.5 border border-[#FF6B00] text-[#FF6B00] hover:bg-orange-50 font-bold rounded-xl text-xs transition-all cursor-pointer"
                     >
-                      {quizScore === 3 ? "Re-take Quiz" : "Try Again"}
+                      Re-take Quiz
                     </button>
-                    {quizScore === 3 && (
-                      <button
-                        onClick={() => setActiveTab("my")}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all cursor-pointer"
-                      >
-                        File Fast-Track Complaint
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        exportQuizCertificate(quizScore, quizTakerName);
+                        addNotification(
+                          "Certificate Downloaded",
+                          `Successfully downloaded performance credential token with cryptographic score of ${quizScore}/3.`,
+                          "success"
+                        );
+                      }}
+                      className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs shadow transition-all cursor-pointer"
+                    >
+                      Download Certificate
+                    </button>
                   </div>
                 </div>
               )}
             </div>
-
-            {/* HOW TO BOOST SCORE CARD */}
+ 
+            {/* CIVIC LEADERBOARD COMPONENT */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
-              <h4 className="font-sans font-extrabold text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-[#FF6B00]" /> Civic Reputation Guide
-              </h4>
-              <p className="text-[11px] text-gray-500 leading-normal">
-                Build your ranking in Sonepur Ward No. 4 and earn high dispatch priority for your reports.
-              </p>
-
-              <div className="space-y-3 pt-2">
-                {[
-                  { title: "Report a New Defect", reward: "+20 Pts", desc: "Attach high-precision GPS coordinate pin.", done: myComplaints.length >= 1 },
-                  { title: "Upvote Neighborhood Alert", reward: "+5 Pts", desc: "Help officers triage critical local reports.", done: complaints.some(c => c.hasUpvoted) },
-                  { title: "Submit Resolution Feedback", reward: "+15 Pts", desc: "Verify speed & work quality with rating.", done: feedbackGivenCount >= 1 },
-                  { title: "Complete Local Knowledge", reward: "+25 Pts", desc: "Clear Sonepur Interactive Quiz module.", done: quizUnlockedBadge || citizenProfile.score >= 865 }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-start gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-150">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.done ? "bg-green-500" : "bg-[#FF6B00]"}`} />
-                        <span className="font-sans font-bold text-gray-700 text-xs">{item.title}</span>
-                      </div>
-                      <p className="text-[9px] text-gray-400 mt-0.5">{item.desc}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[9px] font-mono font-bold bg-white px-1.5 py-0.5 border rounded block text-slate-600">
-                        {item.reward}
-                      </span>
-                      {item.done ? (
-                        <span className="text-[8px] text-green-600 font-bold mt-1 block">Earned ✓</span>
-                      ) : (
-                        <span className="text-[8px] text-gray-400 mt-1 block">Active</span>
-                      )}
-                    </div>
+              <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-emerald-50 rounded-xl text-emerald-500">
+                    <Users className="w-5 h-5" />
                   </div>
-                ))}
+                  <div>
+                    <h4 className="font-sans font-bold text-gray-800 text-sm">Civic Leaderboard</h4>
+                    <p className="text-[10px] text-gray-500">Top contributors in Sonepur Ward No. 4</p>
+                  </div>
+                </div>
+                <span className="text-[9px] bg-emerald-50 text-emerald-700 font-mono font-bold px-2 py-0.5 rounded border border-emerald-100">
+                  Live
+                </span>
+              </div>
+
+              {/* Dynamic sorted list based on current user's score */}
+              {(() => {
+                const leaderboardData = [
+                  { name: "Aarav Sharma", score: 920, level: "Elite Guardian", resolved: 24, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" },
+                  { name: "Priya Patel", score: 875, level: "Civic Master", resolved: 19, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
+                  { name: citizenProfile.name, score: citizenProfile.score, level: getCivicLevel(citizenProfile.score).title, resolved: myComplaints.filter(c => c.status === ComplaintStatus.RESOLVED).length + (quizUnlockedBadge ? 1 : 0), avatar: citizenProfile.avatar, isCurrentUser: true },
+                  { name: "Rajesh Kumar", score: 810, level: "Civic Hero", resolved: 16, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100" },
+                  { name: "Anjali Mehta", score: 755, level: "Active Citizen", resolved: 12, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100" },
+                  { name: "Vikram Singh", score: 690, level: "Local Scout", resolved: 10, avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" }
+                ].sort((a, b) => b.score - a.score);
+
+                return (
+                  <div className="space-y-2.5">
+                    {leaderboardData.map((user, idx) => {
+                      const rank = idx + 1;
+                      const isMe = user.isCurrentUser;
+                      
+                      return (
+                        <div 
+                          key={user.name} 
+                          className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
+                            isMe 
+                              ? "bg-orange-50/70 border-orange-200 ring-1 ring-orange-300/20" 
+                              : "bg-slate-50/50 border-gray-150 hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            {/* Rank Medal / Indicator */}
+                            <div className="w-5 h-5 flex items-center justify-center font-mono text-xs font-black shrink-0">
+                              {rank === 1 ? (
+                                <span className="text-amber-500 text-sm">🥇</span>
+                              ) : rank === 2 ? (
+                                <span className="text-slate-400 text-sm">🥈</span>
+                              ) : rank === 3 ? (
+                                <span className="text-amber-700 text-sm">🥉</span>
+                              ) : (
+                                <span className="text-gray-400 text-[10px]">{rank}</span>
+                              )}
+                            </div>
+
+                            {/* Avatar */}
+                            <img 
+                              src={user.avatar} 
+                              alt={user.name} 
+                              className="w-7 h-7 rounded-lg object-cover border border-gray-200 shrink-0"
+                            />
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1">
+                                <span className={`text-[11px] font-bold truncate leading-tight ${isMe ? "text-orange-950" : "text-gray-800"}`}>
+                                  {user.name}
+                                </span>
+                                {isMe && (
+                                  <span className="text-[8px] bg-[#FF6B00] text-white px-1.5 py-0.2 rounded-full font-bold uppercase shrink-0">
+                                    You
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[8px] text-gray-400 leading-none mt-0.5 truncate uppercase font-mono tracking-wider">
+                                {user.level} • {user.resolved} resolved
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0 pl-1">
+                            <span className={`text-xs font-mono font-extrabold ${isMe ? "text-[#FF6B00]" : "text-slate-800"}`}>
+                              {user.score}
+                            </span>
+                            <span className="text-[8px] text-gray-400 block font-sans">Points</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-dashed border-gray-250 text-center">
+                <p className="text-[10px] text-gray-500 leading-normal">
+                  💡 Earn verified issue points, submit speed ratings, and pass civic training quizzes to climb ranks!
+                </p>
               </div>
             </div>
 
@@ -1193,7 +2064,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
                   <p className="font-bold">BROADCAST INFO:</p>
                   <p>● Latitude: 25.6980 N | Longitude: 85.1725 E</p>
                   <p>● Ward: No. 4, Sonpur / Hajipur, Bihar</p>
-                  <p>● Citizen: Arjun Mehta (+91 98765 43210)</p>
+                  <p>● Citizen: {citizenProfile.name} ({citizenProfile.phone || "+91 98765 43210"})</p>
                 </div>
 
                 <div className="flex gap-2">
@@ -1372,136 +2243,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
         )}
       </AnimatePresence>
 
-      {/* CERTIFICATE OF VALOR MODAL */}
-      <AnimatePresence>
-        {selectedBadgeCert && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white border-8 border-amber-100 rounded-3xl p-6 max-w-xl w-full shadow-2xl relative overflow-hidden"
-              style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(255,107,0,0.02), transparent)' }}
-            >
-              {/* Gold Ribbon decoration */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-400 to-yellow-600 text-white flex items-center justify-center font-serif text-[11px] font-bold shadow-md transform rotate-45 translate-x-8 -translate-y-8 origin-center">
-                OFFICIAL
-              </div>
 
-              <button 
-                onClick={() => setSelectedBadgeCert(null)}
-                className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-150 z-20"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="text-center space-y-6 pt-4 relative">
-                
-                {/* Header credentials */}
-                <div className="space-y-1">
-                  <span className="text-[9px] tracking-widest font-mono font-bold text-gray-400 uppercase block">
-                    OneBharat State Grievance Network
-                  </span>
-                  <span className="text-[10px] tracking-widest font-sans font-bold text-[#FF6B00] uppercase block">
-                    Sonepur Municipal Administration, Saran District
-                  </span>
-                </div>
-
-                {/* Main Crest icon */}
-                <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
-                  {renderBadgeIcon(selectedBadgeCert.icon, "w-8 h-8")}
-                </div>
-
-                {/* Certificate title */}
-                <div className="space-y-1.5">
-                  <h4 className="font-serif font-bold text-gray-800 text-lg tracking-wide uppercase">
-                    Certificate of Civic Excellence
-                  </h4>
-                  <p className="text-[11px] text-gray-400 italic font-serif">This official digital token of honor is presented to</p>
-                </div>
-
-                {/* Citizen Name */}
-                <div className="space-y-1 py-1 border-y border-dashed border-amber-200 max-w-md mx-auto">
-                  <h3 className="font-sans font-black text-slate-800 text-xl tracking-tight uppercase">
-                    {citizenProfile.name}
-                  </h3>
-                  <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Citizen ID: {citizenProfile.id}</p>
-                </div>
-
-                {/* Citation */}
-                <div className="max-w-md mx-auto space-y-3">
-                  <p className="text-xs text-gray-600 leading-relaxed font-serif">
-                    "For outstanding civic vigilance and proactive reporting. By securing the <strong className="text-slate-800">{selectedBadgeCert.title}</strong> credential, this citizen has actively assisted local Sonepur Ward Officers in locating, auditing, and resolving key neighborhood hazards."
-                  </p>
-                  
-                  <p className="text-[10px] text-gray-400 font-mono italic">
-                    {selectedBadgeCert.flavor}
-                  </p>
-                </div>
-
-                {/* Footer seal, signatures & QR */}
-                <div className="grid grid-cols-3 items-end gap-2 pt-4 max-w-lg mx-auto">
-                  {/* Signature 1 */}
-                  <div className="text-center space-y-1 border-t border-gray-100 pt-2.5">
-                    <span className="font-serif text-[11px] italic text-slate-800 block">Saran S. P.</span>
-                    <span className="text-[8px] text-gray-400 uppercase block font-mono">Nodal Ward Director</span>
-                  </div>
-
-                  {/* QR code simulation */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 bg-slate-50 border-2 border-amber-100 rounded-lg p-1 flex items-center justify-center">
-                      {/* Styled Vector QR Code block */}
-                      <div className="grid grid-cols-4 gap-0.5 w-full h-full">
-                        {[...Array(16)].map((_, i) => (
-                          <div 
-                            key={i} 
-                            className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2 || i === 0 || i === 3 || i === 12 || i === 15) ? "bg-slate-800" : "bg-transparent"}`} 
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <span className="text-[7px] text-gray-400 font-mono mt-1 uppercase tracking-widest">VERIFIED TOKEN</span>
-                  </div>
-
-                  {/* Signature 2 */}
-                  <div className="text-center space-y-1 border-t border-gray-100 pt-2.5">
-                    <span className="font-serif text-[11px] italic text-slate-800 block">Niket Raj</span>
-                    <span className="text-[8px] text-gray-400 uppercase block font-mono">Super-App Architect</span>
-                  </div>
-                </div>
-
-                {/* Social Share actions */}
-                <div className="flex gap-2 justify-center pt-4 border-t border-dashed border-gray-100">
-                  <button
-                    onClick={() => {
-                      addNotification(
-                        "Certificate Downloaded",
-                        `Successfully generated high-resolution security certificate token for ${selectedBadgeCert.title}.`,
-                        "success"
-                      );
-                      setSelectedBadgeCert(null);
-                    }}
-                    className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white font-bold rounded-xl text-xs flex items-center gap-1 shadow transition-all cursor-pointer"
-                  >
-                    Download Digital Copy
-                  </button>
-                  <button
-                    onClick={() => {
-                      const text = encodeURIComponent(`📢 Proud to earn the '${selectedBadgeCert.title}' digital credential on the official Sonepur Citizen Portal (sonpur.site.je)! Join me in keeping Sonpur clean and hazard-free. 🇮🇳`);
-                      window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank");
-                      addNotification("Social Shared", "Opened Twitter share dialogue.", "success");
-                    }}
-                    className="px-4 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-600 font-bold border border-sky-200 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer"
-                  >
-                    <Twitter className="w-3.5 h-3.5 fill-current" /> Share Badge
-                  </button>
-                </div>
-
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
     </div>
   );

@@ -7,8 +7,8 @@ import { Complaint, ComplaintCategory, ComplaintPriority, ComplaintStatus } from
 
 export const MOCK_CITIZEN = {
   id: "user-101",
-  name: "Arjun Mehta",
-  email: "arjun.mehta@gmail.com",
+  name: "Niket Raj",
+  email: "niketrajkvs@gmail.com",
   phone: "+91 98765 43210",
   avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
   score: 840, // Citizen Civic Score out of 1000
@@ -173,7 +173,7 @@ export const INITIAL_COMPLAINTS: Complaint[] = [
     createdAt: "2026-06-23T20:10:00Z",
     updatedAt: "2026-06-27T17:30:00Z",
     userId: "user-101",
-    userName: "Arjun Mehta",
+    userName: "Niket Raj",
     userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100",
     isAnonymous: false,
     upvotes: 42,
@@ -187,7 +187,7 @@ export const INITIAL_COMPLAINTS: Complaint[] = [
         id: "t-11",
         status: ComplaintStatus.SUBMITTED,
         date: "2026-06-23T20:10:00Z",
-        notes: "Complaint filed by Arjun Mehta. AI Priority Analysis marked as High due to commercial crowd safety risk.",
+        notes: "Complaint filed by Niket Raj. AI Priority Analysis marked as High due to commercial crowd safety risk.",
         updatedBy: "OneBharat AI"
       },
       {
@@ -370,7 +370,7 @@ export const INITIAL_COMPLAINTS: Complaint[] = [
     createdAt: "2026-06-24T14:20:00Z",
     updatedAt: "2026-06-25T11:10:00Z",
     userId: "user-101",
-    userName: "Arjun Mehta",
+    userName: "Niket Raj",
     isAnonymous: false,
     upvotes: 35,
     hasUpvoted: true,
@@ -477,7 +477,7 @@ export const INITIAL_COMPLAINTS: Complaint[] = [
     createdAt: "2026-06-29T10:45:00Z",
     updatedAt: "2026-06-29T10:45:00Z",
     userId: "user-101",
-    userName: "Arjun Mehta",
+    userName: "Niket Raj",
     userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100",
     isAnonymous: false,
     upvotes: 68,

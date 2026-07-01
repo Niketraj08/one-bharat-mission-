@@ -10,30 +10,6 @@ OneBharat is a modern web app designed to support citizens with essential servic
 - Officer and admin portal views
 - Responsive and mobile-friendly interface
 
-## Tech Stack
-- React + TypeScript
-- Vite
-- Firebase
-- GSAP, Lucide Icons, QR Code support, and PDF generation libraries
-
-## Run Locally
-
-Prerequisites:
-- Node.js 18 or higher
-
-Steps:
-1. Install dependencies
-   ```bash
-   npm install
-   ```
-2. Start the development server
-   ```bash
-   npm run dev
-   ```
-3. Open the app in your browser at:
-   ```text
-   http://localhost:3000
-   ```
 
 ## Credits
 - Developed by: Niket

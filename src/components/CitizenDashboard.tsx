@@ -1450,16 +1450,11 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
 
                           {/* QR Code */}
                           <div className="flex flex-col items-center">
-                            <div className="w-10 h-10 bg-white border border-amber-100 rounded p-0.5 flex items-center justify-center shadow-inner">
-                              <div className="grid grid-cols-4 gap-0.5 w-full h-full">
-                                {[...Array(16)].map((_, i) => (
-                                  <div 
-                                    key={i} 
-                                    className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2 || i === 0 || i === 3 || i === 12 || i === 15) ? "bg-slate-800" : "bg-transparent"}`} 
-                                  />
-                                ))}
-                              </div>
-                            </div>
+                            <img 
+                              src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fsonpur.site.je" 
+                              alt="Verified QR Code"
+                              className="w-10 h-10 bg-white border border-amber-100 rounded p-0.5 shadow-inner"
+                            />
                             <span className="text-[5px] text-gray-400 font-mono mt-0.5 leading-none">HASH AUTHENTICATED</span>
                           </div>
 
@@ -1768,16 +1763,11 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNewComplai
 
                         {/* Custom QR Code */}
                         <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 bg-white border border-amber-100 rounded p-0.5 flex items-center justify-center">
-                            <div className="grid grid-cols-4 gap-0.5 w-full h-full">
-                              {[...Array(16)].map((_, i) => (
-                                <div 
-                                  key={i} 
-                                  className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2 || i === 0 || i === 3 || i === 12 || i === 15) ? "bg-slate-800" : "bg-transparent"}`} 
-                                />
-                              ))}
-                            </div>
-                          </div>
+                          <img 
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https%3A%2F%2Fsonpur.site.je" 
+                            alt="Verified QR Code"
+                            className="w-8 h-8 bg-white border border-amber-100 rounded p-0.5 shadow-sm"
+                          />
                           <span className="text-[4px] text-gray-400 font-mono mt-0.5 leading-none">SECURE QR CODE</span>
                         </div>
 

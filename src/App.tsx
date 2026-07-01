@@ -261,8 +261,8 @@ function AppContent() {
                 <OneBharatLogo className="app-logo-img w-full h-full" />
               </div>
               <div className="hidden sm:block text-left">
-                <h1 className="app-title-text font-black text-sm uppercase tracking-tight leading-none text-white">OneBharat</h1>
-                <span className="app-subtitle-text text-[9px] font-mono tracking-widest text-[#FF6B00] uppercase block mt-0.5">India Civic Core</span>
+                <h1 className="app-title-text font-black text-sm uppercase tracking-tight leading-none text-white">OneBharat Sonpur</h1>
+                <span className="app-subtitle-text text-[9px] font-mono tracking-widest text-[#FF6B00] uppercase block mt-0.5">Sonpur.site.je Portal</span>
               </div>
             </div>
           </div>

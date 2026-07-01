@@ -138,14 +138,14 @@ export const WelcomeAuth: React.FC<WelcomeAuthProps> = ({ onLoginSuccess }) => {
           <div className="z-10 my-8 space-y-6">
             <div className="space-y-2">
               <span className="px-2 py-0.5 text-[9px] bg-orange-500/15 text-orange-400 rounded-full border border-orange-500/30 font-mono font-bold uppercase tracking-wider">
-                State Grievance Network
+                Official Sonpur Citizen e-Portal (sonpur.site.je)
               </span>
               <h1 className="text-2xl font-bold tracking-tight font-sans text-gray-100 leading-tight">
-                Empowering Citizens, <br />
-                Unifying Municipalities.
+                Sonpur Citizen Portal | <br />
+                Sonepur Civic Redressal.
               </h1>
               <p className="text-xs text-gray-400 leading-relaxed max-w-sm">
-                A seamless state-level digital platform connecting Sonpur Ward Centrals and the Hajipur Corporator Regional Cell for quick administrative action.
+                Welcome to the official Sonpur (Sonepur) Citizen Redressal desk at <strong>sonpur.site.je</strong>. Report road, sanitation, water, or electric hazards directly to local Saran Ward Officers for instant action.
               </p>
             </div>
 

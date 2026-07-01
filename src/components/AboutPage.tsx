@@ -13,10 +13,10 @@ export const AboutPage: React.FC = () => {
       {/* HEADER SECTION */}
       <div className="text-center space-y-2">
         <h2 className="font-sans font-black text-2xl md:text-3xl uppercase tracking-tight text-slate-900">
-          About <span className="text-[#FF6B00]">OneBharat</span>
+          About <span className="text-[#FF6B00]">OneBharat Sonpur</span>
         </h2>
         <p className="text-xs text-gray-500 font-mono tracking-wider uppercase">
-          India's Decentralized Civic Redressal & Dispatch Core
+          Official Sonpur Citizen Portal & Civic Grievance Network (sonpur.site.je)
         </p>
       </div>
 
@@ -27,18 +27,18 @@ export const AboutPage: React.FC = () => {
             <OneBharatLogo className="w-full h-full" />
           </div>
           <div className="text-center">
-            <h3 className="font-sans font-bold text-sm text-slate-800">OneBharat Core</h3>
-            <p className="text-[10px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">v2.1.0-Release</p>
+            <h3 className="font-sans font-bold text-sm text-slate-800">OneBharat Sonpur</h3>
+            <p className="text-[10px] font-mono text-[#FF6B00] uppercase font-bold mt-0.5">sonpur.site.je</p>
           </div>
         </div>
 
         <div className="md:col-span-8 flex flex-col justify-between space-y-4">
           <div className="space-y-3">
             <h4 className="font-sans font-extrabold text-sm text-slate-900 uppercase tracking-wider">
-              Empowering Saran & Vaishali Municipalities
+              Empowering Sonpur, Saran & Hajipur Municipalities
             </h4>
             <p className="text-xs text-gray-600 leading-relaxed">
-              OneBharat provides a high-fidelity digital gateway for citizens of Saran, Sonpur, and Hajipur to submit, localize, and track civic grievances directly. Our advanced spatial routing engine dispatches verified tickets to Nodal Ward Officers with sub-meter telemetry coordinates.
+              The Sonpur Citizen Portal (sonpur.site.je) provides a high-fidelity digital gateway for citizens of Saran, Sonepur, and Hajipur to submit, localize, and track civic grievances directly. Our advanced spatial routing engine dispatches verified tickets to Nodal Ward Officers with sub-meter telemetry coordinates.
             </p>
             <p className="text-xs text-gray-600 leading-relaxed">
               By automating dispatch SLA tracking, municipal administrations gain full visual control over streetlights, road damages, broken water infrastructure, and waste management with high-contrast D3 reporting widgets.
